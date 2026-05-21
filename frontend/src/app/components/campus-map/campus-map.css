@@ -1,0 +1,111 @@
+.map-root {
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid var(--color-border);
+}
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+/* ---- Badge markers ---- */
+/* Outer wrapper: MapLibre writes its own transform here for positioning — do not touch it */
+:host ::ng-deep .map-marker-wrap {
+  cursor: pointer;
+}
+
+/* Inner badge: safe to animate independently */
+:host ::ng-deep .map-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s, box-shadow 0.15s;
+  will-change: transform;
+}
+
+:host ::ng-deep .map-marker-wrap:hover .map-badge {
+  transform: scale(1.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* ---- MapLibre popup overrides ---- */
+:host ::ng-deep .otu-popup .maplibregl-popup-content {
+  padding: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.14);
+  border: 1.5px solid var(--color-border);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+:host ::ng-deep .otu-popup .maplibregl-popup-tip {
+  border-top-color: var(--color-border);
+}
+
+/* ---- Popup inner layout ---- */
+:host ::ng-deep .map-popup {
+  min-width: 210px;
+}
+
+:host ::ng-deep .popup-building {
+  margin: 0;
+  padding: 0.7rem 1rem 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+}
+
+:host ::ng-deep .popup-session {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s;
+}
+
+:host ::ng-deep .popup-session:last-child {
+  border-bottom: none;
+}
+
+:host ::ng-deep .popup-session:hover {
+  background: #f0f5ff;
+}
+
+:host ::ng-deep .popup-course {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+:host ::ng-deep .popup-desc {
+  font-size: 0.85rem;
+  color: var(--color-text);
+  line-height: 1.35;
+}
+
+:host ::ng-deep .popup-time {
+  font-size: 0.74rem;
+  color: var(--color-text-muted);
+}

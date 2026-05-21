@@ -1,0 +1,50 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>Create an account</h1>
+    <p class="subtitle">Join StudyHub for Ontario Tech students</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="field">
+        <label for="name">Full Name</label>
+        <input id="name" type="text" formControlName="name"
+          placeholder="Alex Chen" [class.invalid]="fieldError('name')" />
+        @if (fieldError('name')) {
+          <span class="error-msg">Please enter your name.</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email"
+          placeholder="you@ontariotechu.ca" [class.invalid]="fieldError('email')" />
+        @if (fieldError('email')) {
+          <span class="error-msg">Enter a valid email address.</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" formControlName="password"
+          placeholder="Min. 6 characters" [class.invalid]="fieldError('password')" />
+        @if (fieldError('password')) {
+          <span class="error-msg">Password must be at least 6 characters.</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="program">Program <span class="optional">(optional)</span></label>
+        <input id="program" type="text" formControlName="program" placeholder="e.g. Computer Science" />
+      </div>
+
+      @if (error()) {
+        <p class="submit-error">{{ error() }}</p>
+      }
+
+      <button type="submit" class="btn-submit" [disabled]="loading()">
+        {{ loading() ? 'Creating account…' : 'Create account' }}
+      </button>
+    </form>
+
+    <p class="auth-link">Already have an account? <a routerLink="/login">Sign in</a></p>
+  </div>
+</div>

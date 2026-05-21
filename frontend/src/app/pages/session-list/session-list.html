@@ -1,0 +1,83 @@
+<div class="page">
+  <div class="hero">
+    <h1>Find a Study Session</h1>
+    <p>Connect with Ontario Tech students studying the same courses.</p>
+  </div>
+
+  <div class="filters">
+    <input class="search-input" type="text" placeholder="Search by course, topic, or description…"
+      [value]="searchQuery()" (input)="onSearch($any($event.target).value)" />
+    <select class="course-select" [value]="courseFilter()" (change)="onCourseFilter($any($event.target).value)">
+      <option value="">All Courses</option>
+      @for (course of usedCourses(); track course.code) {
+        <option [value]="course.code">{{ course.code }} — {{ course.name }}</option>
+      }
+    </select>
+    @if (searchQuery() || courseFilter()) {
+      <button class="btn-clear" (click)="clearFilters()">Clear</button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="state-msg">Loading sessions…</div>
+  } @else if (error()) {
+    <div class="state-msg error">{{ error() }}</div>
+  } @else {
+    <div class="split-layout">
+      <div class="sessions-col">
+        @if (filteredSessions().length === 0) {
+          <div class="state-msg">
+            <p>No sessions found.</p>
+            @if (searchQuery() || courseFilter()) {
+              <button class="btn-clear" (click)="clearFilters()">Clear filters</button>
+            } @else {
+              <a routerLink="/sessions/new" class="btn-primary">Create the first one</a>
+            }
+          </div>
+        } @else {
+          <div class="session-list">
+            @for (session of filteredSessions(); track session.id) {
+              <a [routerLink]="['/sessions', session.id]" class="session-card">
+                <div class="card-top">
+                  <div class="card-course">
+                    <span class="course-code">{{ session.courseCode }}</span>
+                    <span class="course-name">{{ session.courseName }}</span>
+                  </div>
+                  <span class="location-badge" [class.online]="session.locationType === 'online'">
+                    {{ session.locationType === 'online' ? '💻 Online' : '🏫 In-Person' }}
+                  </span>
+                </div>
+                <p class="card-desc">{{ session.description }}</p>
+                @if (session.topics.length > 0) {
+                  <div class="topics">
+                    @for (topic of session.topics.slice(0, 4); track topic) {
+                      <span class="topic-chip">{{ topic }}</span>
+                    }
+                    @if (session.topics.length > 4) {
+                      <span class="topic-chip muted">+{{ session.topics.length - 4 }}</span>
+                    }
+                  </div>
+                }
+                <div class="card-footer">
+                  <div class="footer-row">
+                    <span class="meta-item">📅 {{ formatDate(session.startTime) }}, {{ formatTime(session.startTime) }} – {{ formatTime(session.endTime) }} <span class="duration">{{ duration(session.startTime, session.endTime) }}</span></span>
+                    <span class="meta-right">
+                      <span class="participants-count">👥 {{ session.participants.length }}</span>
+                      <span class="card-owner">{{ session.owner.name }}</span>
+                    </span>
+                  </div>
+                  @if (session.locationType === 'room') {
+                    <span class="meta-item">📍 {{ session.location }}</span>
+                  }
+                </div>
+              </a>
+            }
+          </div>
+        }
+      </div>
+      <div class="map-col">
+        <app-campus-map [sessions]="filteredSessions()" />
+      </div>
+    </div>
+  }
+</div>
