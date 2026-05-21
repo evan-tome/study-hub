@@ -1,0 +1,17 @@
+# Backend-specific patterns (Node.js/Express)
+# See root .gitignore for shared patterns
+
+# TypeScript
+/dist
+/*.tsbuildinfo
+
+# Development dependencies (if using nodemon/ts-node)
+.nodemon.json
+
+# IDE project files
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace

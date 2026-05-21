@@ -1,0 +1,95 @@
+<div class="page">
+  <div class="page-header">
+    <div class="avatar-row">
+      <div class="avatar-lg">{{ auth.currentUser()?.name?.[0]?.toUpperCase() }}</div>
+      <div>
+        <h1>{{ auth.currentUser()?.name }}</h1>
+        <p class="email">{{ auth.currentUser()?.email }}</p>
+      </div>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="state-msg">Loading…</div>
+  } @else {
+    <div class="section">
+      <h2 class="section-title">Program &amp; Year</h2>
+      <div class="field-row">
+        <div class="field">
+          <label>Program</label>
+          <input
+            type="text"
+            placeholder="e.g. Computer Science"
+            [ngModel]="program()"
+            (ngModelChange)="program.set($event); saveState.set('idle')"
+          />
+        </div>
+        <div class="field">
+          <label>Year</label>
+          <div class="year-counter">
+            <button type="button" class="counter-btn" (click)="decrementYear()" [disabled]="year() <= 1">−</button>
+            <span class="counter-val">Year {{ year() }}</span>
+            <button type="button" class="counter-btn" (click)="incrementYear()" [disabled]="year() >= 10">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">My Courses</h2>
+      <p class="section-hint">Add the courses you're enrolled in to find relevant study sessions.</p>
+
+      <div class="combobox" [class.open]="dropdownOpen()">
+        <input
+          class="combobox-input"
+          type="text"
+          placeholder="Search by code or name…"
+          [value]="courseQuery()"
+          (input)="onCourseInput($any($event.target).value)"
+          (focus)="dropdownOpen.set(true)"
+          (blur)="onBlur()"
+          autocomplete="off"
+        />
+        @if (dropdownOpen() && filteredCourses().length > 0) {
+          <div class="combobox-dropdown">
+            @for (course of filteredCourses(); track course.code) {
+              <button type="button" class="combobox-option" (mousedown)="selectCourse(course)">
+                <span class="opt-code">{{ course.code }}</span>
+                <span class="opt-name">{{ course.name }}</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      @if (selectedCourses().length > 0) {
+        <div class="course-chips">
+          @for (course of selectedCourses(); track course.code) {
+            <div class="course-chip">
+              <span class="chip-code">{{ course.code }}</span>
+              <span class="chip-name">{{ course.name }}</span>
+              <button class="chip-remove" type="button" (click)="removeCourse(course.code)" title="Remove">×</button>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="empty-hint">No courses added yet.</p>
+      }
+    </div>
+
+    <div class="form-actions">
+      <button
+        class="btn-save"
+        [class.saved]="saveState() === 'saved'"
+        [class.error]="saveState() === 'error'"
+        (click)="save()"
+        [disabled]="saveState() === 'saving'"
+      >
+        @if (saveState() === 'saving') { Saving… }
+        @else if (saveState() === 'saved') { ✓ Saved }
+        @else if (saveState() === 'error') { Save failed — retry }
+        @else { Save changes }
+      </button>
+    </div>
+  }
+</div>

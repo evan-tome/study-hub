@@ -1,0 +1,126 @@
+<div class="page">
+  <div class="form-header">
+    <a routerLink="/" class="back-link">← Back</a>
+    <h1>Create a Study Session</h1>
+    <p>Fill in the details and invite classmates to join.</p>
+  </div>
+
+  <form class="form-card" [formGroup]="form" (ngSubmit)="submit()">
+
+    <!-- Course combobox -->
+    <div class="field">
+      <label>Course <span class="required">*</span></label>
+      @if (selectedCourse()) {
+        <div class="course-selected" [class.invalid]="fieldError('courseCode')">
+          <span class="selected-code">{{ selectedCourse()!.code }}</span>
+          <span class="selected-name">{{ selectedCourse()!.name }}</span>
+          <button type="button" class="clear-course" (click)="clearCourse()" title="Change course">×</button>
+        </div>
+      } @else if (coursesLoading()) {
+        <div class="courses-loading">Loading courses…</div>
+      } @else {
+        <div class="combobox" [class.open]="dropdownOpen()">
+          <input
+            class="combobox-input"
+            type="text"
+            placeholder="Search by code or name…"
+            [value]="courseQuery()"
+            (input)="onCourseInput($any($event.target).value)"
+            (focus)="dropdownOpen.set(true)"
+            (blur)="onCourseBlur()"
+            [class.invalid]="fieldError('courseCode')"
+            autocomplete="off"
+            autofocus
+          />
+          @if (dropdownOpen() && filteredCourses().length > 0) {
+            <div class="combobox-dropdown">
+              @for (course of filteredCourses(); track course.code) {
+                <button type="button" class="combobox-option" (mousedown)="selectCourse(course)">
+                  <span class="opt-code">{{ course.code }}</span>
+                  <span class="opt-name">{{ course.name }}</span>
+                  <span class="opt-faculty">{{ course.faculty }}</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
+      @if (fieldError('courseCode')) {
+        <span class="error-msg">Please select a course.</span>
+      }
+    </div>
+
+    <!-- Description -->
+    <div class="field">
+      <label for="description">Description <span class="required">*</span></label>
+      <textarea id="description" formControlName="description" rows="3"
+        placeholder="What will you be studying? (e.g. Midterm review: sorting algorithms and recursion)"
+        [class.invalid]="fieldError('description')"></textarea>
+      @if (fieldError('description')) {
+        <span class="error-msg">Please provide a description.</span>
+      }
+    </div>
+
+    <!-- Topics -->
+    <div class="field">
+      <label>Topics</label>
+      <div class="topic-input-row">
+        <input type="text" placeholder="Add a topic and press Enter…"
+          [value]="topicInput()"
+          (input)="topicInput.set($any($event.target).value)"
+          (keydown)="onTopicKeydown($event)" />
+        <button type="button" class="btn-add-topic" (click)="addTopic()">Add</button>
+      </div>
+      @if (topics().length > 0) {
+        <div class="topics">
+          @for (topic of topics(); track topic) {
+            <span class="topic-chip">
+              {{ topic }}
+              <button type="button" class="remove-topic" (click)="removeTopic(topic)">×</button>
+            </span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Time -->
+    <div class="field-row">
+      <div class="field">
+        <label for="startTime">Start Time <span class="required">*</span></label>
+        <input id="startTime" type="datetime-local" formControlName="startTime" [class.invalid]="fieldError('startTime')" />
+        @if (fieldError('startTime')) { <span class="error-msg">Required.</span> }
+      </div>
+      <div class="field">
+        <label for="endTime">End Time <span class="required">*</span></label>
+        <input id="endTime" type="datetime-local" formControlName="endTime" [class.invalid]="fieldError('endTime')" />
+        @if (fieldError('endTime')) { <span class="error-msg">Required.</span> }
+      </div>
+    </div>
+
+    <!-- Location -->
+    <div class="field">
+      <label>Location <span class="required">*</span></label>
+      <div class="location-toggle">
+        <button type="button" class="toggle-btn" [class.active]="locationType() === 'room'" (click)="setLocationType('room')">🏫 In-Person</button>
+        <button type="button" class="toggle-btn" [class.active]="locationType() === 'online'" (click)="setLocationType('online')">💻 Online</button>
+      </div>
+      @if (locationType() === 'room') {
+        <input type="text" formControlName="location" placeholder="Room number or building (e.g. ERC 3020)" [class.invalid]="fieldError('location')" />
+      } @else {
+        <input type="url" formControlName="location" placeholder="Meeting link (e.g. https://zoom.us/j/...)" [class.invalid]="fieldError('location')" />
+      }
+      @if (fieldError('location')) {
+        <span class="error-msg">Please enter a {{ locationType() === 'room' ? 'room' : 'meeting link' }}.</span>
+      }
+    </div>
+
+    @if (submitError()) { <p class="submit-error">{{ submitError() }}</p> }
+
+    <div class="form-actions">
+      <a routerLink="/" class="btn-secondary">Cancel</a>
+      <button type="submit" class="btn-submit" [disabled]="submitting()">
+        {{ submitting() ? 'Creating…' : 'Create Session' }}
+      </button>
+    </div>
+  </form>
+</div>

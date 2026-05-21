@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  name         String
+  passwordHash String
+  program      String   @default("")
+  year         Int      @default(0)
+  courses      String[]
+  createdAt    DateTime       @default(now())
+  owned        StudySession[] @relation("Owner")
+  joined       StudySession[] @relation("Participants")
+  messages     Message[]
+}
+
+model Message {
+  id        String       @id @default(uuid())
+  content   String
+  sessionId String
+  session   StudySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User         @relation(fields: [authorId], references: [id])
+  createdAt DateTime     @default(now())
+}
+
+model StudySession {
+  id           String   @id @default(uuid())
+  courseCode   String
+  topics       String[]
+  description  String
+  ownerId      String
+  owner        User     @relation("Owner", fields: [ownerId], references: [id])
+  participants User[]   @relation("Participants")
+  startTime    DateTime
+  endTime      DateTime
+  locationType String
+  location     String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  messages     Message[]
+}

@@ -1,0 +1,126 @@
+<div class="page">
+  <a routerLink="/" class="back-link">← Back to sessions</a>
+
+  @if (loading()) {
+    <div class="state-msg">Loading…</div>
+  } @else if (error()) {
+    <div class="state-msg error">{{ error() }}</div>
+  } @else if (session(); as s) {
+    <div class="detail-layout">
+      <div class="info-col">
+        <div class="detail-header">
+          <div class="header-badges">
+            <span class="course-badge">{{ s.courseCode }}</span>
+            <span class="location-badge" [class.online]="s.locationType === 'online'">
+              {{ s.locationType === 'online' ? '💻 Online' : '🏫 In-Person' }}
+            </span>
+          </div>
+          <p class="course-full-name">{{ s.courseName }}</p>
+          <p class="description">{{ s.description }}</p>
+        </div>
+
+        @if (s.topics.length > 0) {
+          <section class="section">
+            <h2 class="section-title">Topics</h2>
+            <div class="topics">
+              @for (topic of s.topics; track topic) {
+                <span class="topic-chip">{{ topic }}</span>
+              }
+            </div>
+          </section>
+        }
+
+        <section class="section">
+          <h2 class="section-title">When</h2>
+          <div class="info-row"><span class="info-icon">📅</span><span>{{ formatDate(s.startTime) }}</span></div>
+          <div class="info-row"><span class="info-icon">🕐</span><span>{{ formatTime(s.startTime) }} – {{ formatTime(s.endTime) }} ({{ duration(s.startTime, s.endTime) }})</span></div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Where</h2>
+          @if (s.locationType === 'online') {
+            <div class="info-row"><span class="info-icon">🔗</span><a [href]="s.location" target="_blank" rel="noopener" class="link">{{ s.location }}</a></div>
+          } @else {
+            <div class="info-row"><span class="info-icon">📍</span><span>{{ s.location }}</span></div>
+          }
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Participants ({{ s.participants.length }})</h2>
+          <ul class="participant-list">
+            @for (p of s.participants; track p.id) {
+              <li class="participant">
+                <span class="avatar">{{ p.name[0].toUpperCase() }}</span>
+                <span>{{ p.name }}</span>
+                @if (p.id === s.owner.id) {
+                  <span class="owner-tag">host</span>
+                }
+              </li>
+            }
+          </ul>
+        </section>
+
+        <div class="action-card">
+          @if (!auth.isLoggedIn()) {
+            <p class="join-prompt">Sign in to join this session.</p>
+            <a routerLink="/login" class="btn-join-link">Sign in</a>
+          } @else if (isOwner()) {
+            <p class="owner-msg">You're hosting this session.</p>
+          } @else if (isParticipant()) {
+            <p class="joined-msg">You're in this session!</p>
+            <button class="btn-leave" (click)="leave()" [disabled]="actionLoading()">
+              {{ actionLoading() ? 'Leaving…' : 'Leave session' }}
+            </button>
+          } @else {
+            <button class="btn-join" (click)="join()" [disabled]="actionLoading()">
+              {{ actionLoading() ? 'Joining…' : 'Join this session' }}
+            </button>
+          }
+
+          @if (isOwner()) {
+            <hr class="divider" />
+            <button class="btn-delete" (click)="deleteSession()">Delete session</button>
+          }
+        </div>
+      </div>
+
+      @if (isParticipant() || isOwner()) {
+      <div class="chat-col">
+        <div class="chat-header">Chat</div>
+        <div class="chat-messages" #chatScroll>
+          @if (messages().length === 0) {
+            <div class="chat-empty">No messages yet. Say hello!</div>
+          }
+          @for (msg of messages(); track msg.id) {
+            <div class="msg" [class.mine]="isMine(msg)">
+              <div class="msg-meta">
+                @if (!isMine(msg)) {
+                  <span class="msg-author">{{ msg.author.name }}</span>
+                }
+                <span class="msg-time">{{ formatMsgTime(msg.createdAt) }}</span>
+              </div>
+              <div class="msg-bubble">{{ msg.content }}</div>
+            </div>
+          }
+        </div>
+        <div class="chat-input-wrap">
+          @if (auth.isLoggedIn()) {
+            <textarea
+              class="chat-input"
+              [(ngModel)]="messageInput"
+              (keydown)="onMessageKeydown($event)"
+              placeholder="Message… (Enter to send)"
+              rows="1"
+            ></textarea>
+            <button class="chat-send" (click)="sendMessage()" [disabled]="sendingMessage() || !messageInput.trim()">
+              Send
+            </button>
+          } @else {
+            <p class="chat-login-prompt"><a routerLink="/login">Sign in</a> to chat.</p>
+          }
+        </div>
+      </div>
+      }
+    </div>
+  }
+</div>

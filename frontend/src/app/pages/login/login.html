@@ -1,0 +1,36 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>Welcome back</h1>
+    <p class="subtitle">Sign in to your StudyHub account</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email"
+          placeholder="you@ontariotechu.ca" [class.invalid]="fieldError('email')" />
+        @if (fieldError('email')) {
+          <span class="error-msg">Enter a valid email address.</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" formControlName="password"
+          placeholder="••••••••" [class.invalid]="fieldError('password')" />
+        @if (fieldError('password')) {
+          <span class="error-msg">Password is required.</span>
+        }
+      </div>
+
+      @if (error()) {
+        <p class="submit-error">{{ error() }}</p>
+      }
+
+      <button type="submit" class="btn-submit" [disabled]="loading()">
+        {{ loading() ? 'Signing in…' : 'Sign in' }}
+      </button>
+    </form>
+
+    <p class="auth-link">Don't have an account? <a routerLink="/register">Create one</a></p>
+  </div>
+</div>
