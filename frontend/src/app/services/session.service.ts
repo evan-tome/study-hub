@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ChatMessage, CreateSessionDto, StudySession, UserProfile } from '../models/session.model';
+import { AdminSession, AdminStats, AdminUser, ChatMessage, CreateSessionDto, RecommendedSession, SqlView, StudySession, UserProfile } from '../models/session.model';
 import { Course } from '../data/courses';
 
 @Injectable({ providedIn: 'root' })
@@ -21,6 +21,10 @@ export class SessionService {
 
   createSession(data: CreateSessionDto): Observable<StudySession> {
     return this.http.post<StudySession>(`${this.base}/sessions`, data);
+  }
+
+  updateSession(id: string, data: CreateSessionDto): Observable<StudySession> {
+    return this.http.put<StudySession>(`${this.base}/sessions/${id}`, data);
   }
 
   joinSession(id: string): Observable<StudySession> {
@@ -56,4 +60,37 @@ export class SessionService {
   updateProfile(data: { courses: string[]; program: string; year: number }): Observable<UserProfile> {
     return this.http.put<UserProfile>(`${this.base}/auth/profile`, data);
   }
+
+  getRecommendations(): Observable<RecommendedSession[]> {
+    return this.http.get<RecommendedSession[]>(`${this.base}/recommendations`);
+  }
+
+  getAdminStats(): Observable<AdminStats> {
+    return this.http.get<AdminStats>(`${this.base}/admin/stats`);
+  }
+
+  getAdminUsers(): Observable<AdminUser[]> {
+    return this.http.get<AdminUser[]>(`${this.base}/admin/users`);
+  }
+
+  deleteAdminUser(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/admin/users/${id}`);
+  }
+
+  getAdminSessions(): Observable<AdminSession[]> {
+    return this.http.get<AdminSession[]>(`${this.base}/admin/sessions`);
+  }
+
+  deleteAdminSession(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/admin/sessions/${id}`);
+  }
+
+  getAdminViews(): Observable<SqlView[]> {
+    return this.http.get<SqlView[]>(`${this.base}/admin/views`);
+  }
+
+  runAdminView(view: string): Observable<any[]> {
+    return this.http.post<any[]>(`${this.base}/admin/query`, { view });
+  }
+
 }

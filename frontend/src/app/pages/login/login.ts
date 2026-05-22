@@ -29,7 +29,7 @@ export class Login {
     this.error.set('');
     const { email, password } = this.form.value;
     this.authService.login(email!, password!).subscribe({
-      next: () => this.router.navigate(['/']),
+      next: () => this.router.navigate(['/sessions']),
       error: (e) => {
         this.error.set(e.error?.error ?? 'Login failed. Please try again.');
         this.loading.set(false);

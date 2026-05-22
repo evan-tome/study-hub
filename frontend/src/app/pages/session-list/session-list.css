@@ -109,6 +109,90 @@
   min-height: 0;
 }
 
+
+/* ---- Section headers ---- */
+.section-header {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-primary-dark);
+  padding: 0.35rem 0.1rem 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.section-header-sub { margin-top: 1rem; }
+
+.section-header-joined {
+  color: #15803d;
+  margin-top: 0.1rem;
+}
+
+.section-header-other {
+  color: var(--color-text-muted);
+  margin-top: 1rem;
+}
+
+/* Joined / hosting card */
+.session-card--joined {
+  border-color: #86efac;
+  background: linear-gradient(to bottom right, #f0fdf4, var(--color-surface));
+}
+
+.session-card--joined:hover {
+  border-color: #22c55e;
+  box-shadow: var(--shadow), 0 0 0 1px #22c55e;
+}
+
+/* Ended card */
+.session-card--ended {
+  opacity: 0.5;
+}
+
+/* Ended toggle button */
+.ended-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.4rem 0.5rem;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.ended-toggle:hover { background: var(--color-raised); }
+
+.ended-toggle-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.ended-toggle-count {
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: var(--color-raised);
+  color: var(--color-text-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 0.05rem 0.4rem;
+}
+
+.ended-toggle-arrow {
+  margin-left: auto;
+  font-size: 0.6rem;
+  color: var(--color-text-subtle);
+}
+
+.session-list--ended { margin-top: 0.4rem; }
+
 /* ---- Session cards ---- */
 .session-list {
   display: flex;
@@ -129,6 +213,7 @@
   box-shadow: var(--shadow-sm);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
+
 
 .session-card:hover {
   border-color: var(--color-primary);
@@ -171,6 +256,13 @@
   text-overflow: ellipsis;
 }
 
+.card-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
 .location-badge {
   font-size: 0.7rem;
   padding: 0.18rem 0.5rem;
@@ -183,6 +275,28 @@
 }
 
 .location-badge.online { background: #ecfeff; color: #0891b2; }
+
+.owner-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.18rem 0.5rem;
+  border-radius: 20px;
+  background: #fef9c3;
+  color: #854d0e;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.joined-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.18rem 0.5rem;
+  border-radius: 20px;
+  background: #dcfce7;
+  color: #15803d;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 
 .card-desc {
   font-size: 0.855rem;
@@ -257,6 +371,21 @@
   gap: 0.5rem;
 }
 
+.status-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  margin-right: 0.3rem;
+  vertical-align: middle;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.status-badge.ongoing { background: #dcfce7; color: #15803d; }
+.status-badge.ended   { background: var(--color-raised); color: var(--color-text-subtle); }
+
 .participants-count { font-size: 0.74rem; color: var(--color-text-muted); }
 
 .card-owner {
@@ -302,4 +431,5 @@
   .page { height: auto; overflow: visible; }
   .split-layout { grid-template-columns: 1fr; align-items: start; }
   .sessions-col { min-height: none; overflow-y: visible; }
+
 }

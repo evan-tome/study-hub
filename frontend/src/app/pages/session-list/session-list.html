@@ -10,7 +10,7 @@
     <select class="course-select" [value]="courseFilter()" (change)="onCourseFilter($any($event.target).value)">
       <option value="">All Courses</option>
       @for (course of usedCourses(); track course.code) {
-        <option [value]="course.code">{{ course.code }} — {{ course.name }}</option>
+        <option [value]="course.code">{{ course.code }} - {{ course.name }}</option>
       }
     </select>
     @if (searchQuery() || courseFilter()) {
@@ -25,6 +25,7 @@
   } @else {
     <div class="split-layout">
       <div class="sessions-col">
+
         @if (filteredSessions().length === 0) {
           <div class="state-msg">
             <p>No sessions found.</p>
@@ -35,48 +36,117 @@
             }
           </div>
         } @else {
-          <div class="session-list">
-            @for (session of filteredSessions(); track session.id) {
-              <a [routerLink]="['/sessions', session.id]" class="session-card">
-                <div class="card-top">
-                  <div class="card-course">
-                    <span class="course-code">{{ session.courseCode }}</span>
-                    <span class="course-name">{{ session.courseName }}</span>
-                  </div>
-                  <span class="location-badge" [class.online]="session.locationType === 'online'">
-                    {{ session.locationType === 'online' ? '💻 Online' : '🏫 In-Person' }}
-                  </span>
-                </div>
-                <p class="card-desc">{{ session.description }}</p>
-                @if (session.topics.length > 0) {
-                  <div class="topics">
-                    @for (topic of session.topics.slice(0, 4); track topic) {
-                      <span class="topic-chip">{{ topic }}</span>
-                    }
-                    @if (session.topics.length > 4) {
-                      <span class="topic-chip muted">+{{ session.topics.length - 4 }}</span>
-                    }
-                  </div>
-                }
-                <div class="card-footer">
-                  <div class="footer-row">
-                    <span class="meta-item">📅 {{ formatDate(session.startTime) }}, {{ formatTime(session.startTime) }} – {{ formatTime(session.endTime) }} <span class="duration">{{ duration(session.startTime, session.endTime) }}</span></span>
-                    <span class="meta-right">
-                      <span class="participants-count">👥 {{ session.participants.length }}</span>
-                      <span class="card-owner">{{ session.owner.name }}</span>
-                    </span>
-                  </div>
-                  @if (session.locationType === 'room') {
-                    <span class="meta-item">📍 {{ session.location }}</span>
-                  }
-                </div>
-              </a>
+
+          <!-- My Joined Sessions -->
+          @if (myJoinedSessions().length > 0) {
+            <div class="section-header section-header-joined">My Sessions</div>
+            <div class="session-list">
+              @for (session of myJoinedSessions(); track session.id) {
+                <ng-container *ngTemplateOutlet="sessionCard; context: { $implicit: session, variant: 'joined' }"></ng-container>
+              }
+            </div>
+          }
+
+          <!-- My Courses (enrolled but not joined) -->
+          @if (myCourseSessions().length > 0) {
+            <div class="section-header" [class.section-header-sub]="myJoinedSessions().length > 0">My Courses</div>
+            <div class="session-list">
+              @for (session of myCourseSessions(); track session.id) {
+                <ng-container *ngTemplateOutlet="sessionCard; context: { $implicit: session, variant: 'course' }"></ng-container>
+              }
+            </div>
+          }
+
+          <!-- Other active sessions -->
+          @if (otherActiveSessions().length > 0) {
+            @if (activeSectionCount() > 1) {
+              <div class="section-header section-header-other">Other Sessions</div>
             }
-          </div>
+            <div class="session-list">
+              @for (session of otherActiveSessions(); track session.id) {
+                <ng-container *ngTemplateOutlet="sessionCard; context: { $implicit: session, variant: '' }"></ng-container>
+              }
+            </div>
+          }
+
+          <!-- Ended sessions (collapsible) -->
+          @if (endedSessions().length > 0) {
+            <button class="ended-toggle" (click)="showEnded.set(!showEnded())">
+              <span class="ended-toggle-label">Ended Sessions</span>
+              <span class="ended-toggle-count">{{ endedSessions().length }}</span>
+              <span class="ended-toggle-arrow">{{ showEnded() ? '▲' : '▼' }}</span>
+            </button>
+            @if (showEnded()) {
+              <div class="session-list session-list--ended">
+                @for (session of endedSessions(); track session.id) {
+                  <ng-container *ngTemplateOutlet="sessionCard; context: { $implicit: session, variant: 'ended' }"></ng-container>
+                }
+              </div>
+            }
+          }
+
         }
+
+        <!-- Shared card template -->
+        <ng-template #sessionCard let-session let-variant="variant">
+          <a [routerLink]="['/sessions', session.id]"
+             class="session-card"
+             [class.session-card--joined]="variant === 'joined'"
+             [class.session-card--ended]="variant === 'ended'"
+             (mouseenter)="hoveredSessionId.set(session.id)"
+             (mouseleave)="hoveredSessionId.set(null)">
+            <div class="card-top">
+              <div class="card-course">
+                <span class="course-code">{{ session.courseCode }}</span>
+                <span class="course-name">{{ session.courseName }}</span>
+              </div>
+              <div class="card-badges">
+                <span class="location-badge" [class.online]="session.locationType === 'online'">
+                  {{ session.locationType === 'online' ? '💻 Online' : '🏫 In-Person' }}
+                </span>
+                @if (session.owner.id === currentUserId()) {
+                  <span class="owner-badge">Hosting</span>
+                } @else if (variant === 'joined') {
+                  <span class="joined-badge">Joined</span>
+                }
+              </div>
+            </div>
+            <p class="card-desc">{{ session.description }}</p>
+            @if (session.topics.length > 0) {
+              <div class="topics">
+                @for (topic of session.topics.slice(0, 4); track topic) {
+                  <span class="topic-chip">{{ topic }}</span>
+                }
+                @if (session.topics.length > 4) {
+                  <span class="topic-chip muted">+{{ session.topics.length - 4 }}</span>
+                }
+              </div>
+            }
+            <div class="card-footer">
+              <div class="footer-row">
+                <span class="meta-item">
+                  @if (sessionStatus(session.startTime, session.endTime) === 'ongoing') {
+                    <span class="status-badge ongoing">Live</span>
+                  } @else if (variant === 'ended') {
+                    <span class="status-badge ended">Ended</span>
+                  }
+                  📅 {{ formatDate(session.startTime) }}, {{ formatTime(session.startTime) }} – {{ formatTime(session.endTime) }}
+                  <span class="duration">{{ duration(session.startTime, session.endTime) }}</span>
+                </span>
+                <span class="meta-right">
+                  <span class="participants-count">👥 {{ session.participants.length }}</span>
+                  <span class="card-owner">{{ session.owner.name }}</span>
+                </span>
+              </div>
+              @if (session.locationType === 'room') {
+                <span class="meta-item">📍 {{ session.location }}</span>
+              }
+            </div>
+          </a>
+        </ng-template>
       </div>
       <div class="map-col">
-        <app-campus-map [sessions]="filteredSessions()" />
+        <app-campus-map [sessions]="filteredSessions()" [userCourses]="userCourses()" [activeSessionId]="hoveredSessionId()" />
       </div>
     </div>
   }

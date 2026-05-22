@@ -32,7 +32,7 @@ export class AuthService {
         localStorage.removeItem('token');
         return null;
       }
-      return { id: payload.userId, name: payload.name, email: payload.email };
+      return { id: payload.userId, name: payload.name, email: payload.email, isAdmin: payload.isAdmin ?? false };
     } catch {
       return null;
     }
@@ -66,6 +66,6 @@ export class AuthService {
 
   private storeSession(res: AuthResponse) {
     this.storage('set', 'token', res.token);
-    this.currentUser.set(res.user);
+    this.currentUser.set(this.loadUser());
   }
 }

@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { SessionService } from '../../services/session.service';
 import { Course } from '../../data/courses';
@@ -14,7 +14,11 @@ import { Course } from '../../data/courses';
 export class SessionForm implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private sessionService = inject(SessionService);
+
+  editId: string | null = null;
+  get isEdit() { return !!this.editId; }
 
   allCourses = signal<Course[]>([]);
   coursesLoading = signal(true);
@@ -39,28 +43,56 @@ export class SessionForm implements OnInit {
 
   form = this.fb.group({
     courseCode: ['', Validators.required],
-    description: ['', [Validators.required]],
+    description: ['', Validators.required],
     startTime: ['', Validators.required],
     endTime: ['', Validators.required],
     location: ['', Validators.required],
   });
 
   ngOnInit() {
+    this.editId = this.route.snapshot.paramMap.get('id');
+
     this.sessionService.getCourses().subscribe({
-      next: (courses) => { this.allCourses.set(courses); this.coursesLoading.set(false); },
+      next: (courses) => {
+        this.allCourses.set(courses);
+        this.coursesLoading.set(false);
+        if (this.editId) this.loadSession(courses);
+      },
       error: () => this.coursesLoading.set(false),
     });
 
-    const now = new Date();
-    now.setMinutes(0, 0, 0);
-    const start = new Date(now.getTime() + 3600000);
-    const end = new Date(now.getTime() + 7200000);
-    this.form.patchValue({ startTime: this.toLocal(start), endTime: this.toLocal(end) });
+    if (!this.editId) {
+      const now = new Date();
+      now.setMinutes(0, 0, 0);
+      const start = new Date(now.getTime() + 3600000);
+      const end = new Date(now.getTime() + 7200000);
+      this.form.patchValue({ startTime: this.toLocal(start), endTime: this.toLocal(end) });
+    }
+  }
+
+  private loadSession(courses: Course[]) {
+    this.sessionService.getSession(this.editId!).subscribe({
+      next: (s) => {
+        const course = courses.find((c) => c.code === s.courseCode)
+          ?? { code: s.courseCode, name: s.courseName, faculty: '' };
+        this.selectedCourse.set(course);
+        this.courseQuery.set(course.code + ' — ' + course.name);
+        this.locationType.set(s.locationType);
+        this.topics.set([...s.topics]);
+        this.form.patchValue({
+          courseCode: s.courseCode,
+          description: s.description,
+          startTime: this.toLocal(new Date(s.startTime)),
+          endTime: this.toLocal(new Date(s.endTime)),
+          location: s.location,
+        });
+      },
+    });
   }
 
   private toLocal(d: Date): string {
     const p = (n: number) => n.toString().padStart(2, '0');
-    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes());
   }
 
   onCourseInput(value: string) {
@@ -74,7 +106,7 @@ export class SessionForm implements OnInit {
 
   selectCourse(course: Course) {
     this.selectedCourse.set(course);
-    this.courseQuery.set(`${course.code} — ${course.name}`);
+    this.courseQuery.set(course.code + ' — ' + course.name);
     this.form.patchValue({ courseCode: course.code });
     this.dropdownOpen.set(false);
   }
@@ -87,7 +119,6 @@ export class SessionForm implements OnInit {
   }
 
   onCourseBlur() {
-    // small delay so click on dropdown option registers first
     setTimeout(() => this.dropdownOpen.set(false), 150);
   }
 
@@ -119,7 +150,7 @@ export class SessionForm implements OnInit {
 
     this.submitting.set(true);
     this.submitError.set('');
-    this.sessionService.createSession({
+    const payload = {
       courseCode: v.courseCode!,
       topics: this.topics(),
       description: v.description!,
@@ -127,9 +158,18 @@ export class SessionForm implements OnInit {
       endTime: end.toISOString(),
       locationType: this.locationType(),
       location: v.location!,
-    }).subscribe({
+    };
+
+    const req$ = this.isEdit
+      ? this.sessionService.updateSession(this.editId!, payload)
+      : this.sessionService.createSession(payload);
+
+    req$.subscribe({
       next: (s) => this.router.navigate(['/sessions', s.id]),
-      error: () => { this.submitError.set('Failed to create session.'); this.submitting.set(false); },
+      error: () => {
+        this.submitError.set(this.isEdit ? 'Failed to save changes.' : 'Failed to create session.');
+        this.submitting.set(false);
+      },
     });
   }
 

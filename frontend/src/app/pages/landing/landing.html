@@ -1,0 +1,42 @@
+<div class="landing">
+
+  <div class="hero">
+    <h1 class="hero-title">Your Study Community<br>at Ontario Tech</h1>
+    <p class="hero-sub">
+      Find and join study sessions with classmates, see where they're meeting on campus,
+      and coordinate in real time — all in one place.
+    </p>
+
+    @if (currentUser()) {
+      <div class="hero-actions">
+        <a routerLink="/sessions" class="btn-primary btn-lg">Browse Sessions →</a>
+        <span class="hero-welcome">Welcome back, {{ currentUser()!.name }}</span>
+      </div>
+    } @else {
+      <div class="hero-actions">
+        <a routerLink="/register" class="btn-primary btn-lg">Create a free account</a>
+        <a routerLink="/sessions" class="btn-outline btn-lg">Browse sessions</a>
+      </div>
+      <p class="hero-note">Requires an <strong>@ontariotechu.net</strong> email to register.</p>
+    }
+  </div>
+
+  <div class="features">
+    <div class="feature-card">
+      <span class="feature-icon">🔍</span>
+      <h2 class="feature-title">Browse</h2>
+      <p class="feature-body">Search sessions by course, topic, or keyword. Filter to courses you're enrolled in. In-person sessions appear as pins on the campus map.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">📋</span>
+      <h2 class="feature-title">Join or Host</h2>
+      <p class="feature-body">RSVP to an existing session with one click, or create your own with a time, location, and list of topics you'll be covering.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">💬</span>
+      <h2 class="feature-title">Chat Together</h2>
+      <p class="feature-body">Every session has a live group chat. Coordinate logistics, share notes, or just say hello before you meet up.</p>
+    </div>
+  </div>
+
+</div>

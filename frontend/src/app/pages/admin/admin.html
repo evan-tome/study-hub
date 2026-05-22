@@ -1,0 +1,233 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Admin</h1>
+    @if (stats()) {
+      <div class="stats-row">
+        <div class="stat-card">
+          <span class="stat-value">{{ stats()!.userCount }}</span>
+          <span class="stat-label">Users</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ stats()!.sessionCount }}</span>
+          <span class="stat-label">Sessions</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ stats()!.messageCount }}</span>
+          <span class="stat-label">Messages</span>
+        </div>
+        <div class="stat-card stat-card--live">
+          <span class="stat-value">{{ stats()!.onlineCount }}</span>
+          <span class="stat-label">Live Now</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn" [class.active]="tab() === 'users'" (click)="tab.set('users')">
+      Users <span class="tab-count">{{ users().length }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="tab() === 'sessions'" (click)="tab.set('sessions')">
+      Sessions <span class="tab-count">{{ sessions().length }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="tab() === 'export'" (click)="tab.set('export')">
+      Export / Views
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="state-msg">Loading…</div>
+  } @else if (error()) {
+    <div class="state-msg error">{{ error() }}</div>
+  } @else {
+
+    @if (actionError()) {
+      <div class="inline-error">
+        {{ actionError() }}
+        <button class="inline-error-close" (click)="actionError.set('')">✕</button>
+      </div>
+    }
+
+    <!-- ── Users tab ── -->
+    @if (tab() === 'users') {
+      <div class="toolbar">
+        <input class="search-input" type="text" placeholder="Search users…"
+          [value]="userSearch()" (input)="userSearch.set($any($event.target).value)" />
+        <span class="toolbar-count">{{ filteredUsers().length }} of {{ users().length }}</span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Program</th>
+              <th>Year</th>
+              <th>Courses</th>
+              <th class="num-col">Owned</th>
+              <th class="num-col">Joined</th>
+              <th class="num-col">Msgs</th>
+              <th>Registered</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of filteredUsers(); track u.id) {
+              <tr>
+                <td class="name-cell">{{ u.name }}</td>
+                <td class="email-cell">{{ u.email }}</td>
+                <td>{{ u.program || '—' }}</td>
+                <td>{{ yearLabel(u.year) }}</td>
+                <td class="courses-cell">
+                  @if (u.courses.length) {
+                    <span class="course-chips">
+                      @for (c of u.courses.slice(0, 3); track c) {
+                        <span class="chip">{{ c }}</span>
+                      }
+                      @if (u.courses.length > 3) {
+                        <span class="chip chip--more">+{{ u.courses.length - 3 }}</span>
+                      }
+                    </span>
+                  } @else {
+                    <span class="muted">—</span>
+                  }
+                </td>
+                <td class="num-col">{{ u._count.owned }}</td>
+                <td class="num-col">{{ u._count.joined }}</td>
+                <td class="num-col">{{ u._count.messages }}</td>
+                <td class="date-cell">{{ formatDate(u.createdAt) }}</td>
+                <td class="action-cell">
+                  <button class="btn-danger" (click)="deleteUser(u.id, u.name)">Delete</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- ── Sessions tab ── -->
+    @if (tab() === 'sessions') {
+      <div class="toolbar">
+        <input class="search-input" type="text" placeholder="Search sessions…"
+          [value]="sessionSearch()" (input)="sessionSearch.set($any($event.target).value)" />
+        <span class="toolbar-count">{{ filteredSessions().length }} of {{ sessions().length }}</span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Course</th>
+              <th>Description</th>
+              <th>Owner</th>
+              <th>Start</th>
+              <th>Duration</th>
+              <th>Location</th>
+              <th class="num-col">Participants</th>
+              <th class="num-col">Msgs</th>
+              <th>Created</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of filteredSessions(); track s.id) {
+              <tr>
+                <td><span class="chip chip--course">{{ s.courseCode }}</span></td>
+                <td class="desc-cell">{{ s.description }}</td>
+                <td class="email-cell">
+                  <span class="owner-name">{{ s.owner.name }}</span>
+                  <span class="muted">{{ s.owner.email }}</span>
+                </td>
+                <td class="date-cell">{{ formatDateTime(s.startTime) }}</td>
+                <td>{{ duration(s.startTime, s.endTime) }}</td>
+                <td>
+                  <span class="chip" [class.chip--online]="s.locationType === 'online'">
+                    {{ s.locationType === 'online' ? 'Online' : s.location }}
+                  </span>
+                </td>
+                <td class="num-col">{{ s._count.participants }}</td>
+                <td class="num-col">{{ s._count.messages }}</td>
+                <td class="date-cell">{{ formatDate(s.createdAt) }}</td>
+                <td class="action-cell">
+                  <button class="btn-danger" (click)="deleteSession(s.id, s.courseCode)">Delete</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- ── Export tab ── -->
+    @if (tab() === 'export') {
+      <div class="view-nav">
+        @for (v of views(); track v.key) {
+          <button class="view-nav-btn" [class.active]="previewKey() === v.key" (click)="previewView(v)">
+            {{ v.label }}
+          </button>
+        }
+      </div>
+
+      @if (previewKey()) {
+        <div class="view-toolbar">
+          @if (activeView()?.description) {
+            <span class="view-toolbar-desc">{{ activeView()!.description }}</span>
+          }
+          <div class="view-toolbar-actions">
+            @if (exportErrors()[previewKey()]) {
+              <span class="card-error">{{ exportErrors()[previewKey()] }}</span>
+            }
+            @if (!previewLoading() && previewRows().length) {
+              <span class="preview-count">{{ previewRows().length }} rows</span>
+            }
+            <button class="btn-export-sm" [disabled]="!!exportLoading()" (click)="exportCsv(activeView()!)">
+              @if (exportLoading() === previewKey()) { Exporting… } @else { Download CSV }
+            </button>
+          </div>
+        </div>
+
+        @if (previewLoading()) {
+          <div class="state-msg">Loading…</div>
+        } @else if (previewError()) {
+          <div class="state-msg error">{{ previewError() }}</div>
+        } @else if (!previewRows().length) {
+          <div class="state-msg">No data.</div>
+        } @else {
+          <div class="preview-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  @for (col of previewColumns(); track col) {
+                    <th>{{ col }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of previewRows(); track $index) {
+                  <tr>
+                    @for (col of previewColumns(); track col) {
+                      <td>{{ cellValue(row[col]) }}</td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      } @else {
+        <p class="view-empty">Select a view above to preview data or download as CSV.</p>
+      }
+    }
+
+  }
+</div>
+
+@if (dialog()) {
+  <app-confirm-dialog
+    [title]="dialog()!.title"
+    [message]="dialog()!.message"
+    confirmLabel="Delete"
+    (confirmed)="confirmDialog()"
+    (cancelled)="cancelDialog()"
+  />
+}

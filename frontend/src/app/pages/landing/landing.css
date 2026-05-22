@@ -1,0 +1,139 @@
+.landing {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 4rem 2rem 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+}
+
+/* ── Hero ── */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.1rem;
+}
+
+.hero-title {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.6px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.hero-sub {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  max-width: 540px;
+  margin: 0;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.hero-welcome {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.hero-note {
+  font-size: 0.8rem;
+  color: var(--color-text-subtle, var(--color-text-muted));
+  margin: 0;
+}
+
+.hero-note strong {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+/* ── Buttons ── */
+.btn-primary {
+  display: inline-block;
+  background: var(--color-primary);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-dark);
+  box-shadow: var(--shadow-primary);
+}
+
+.btn-outline {
+  display: inline-block;
+  background: none;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.btn-outline:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-lg {
+  padding: 0.65rem 1.4rem;
+  font-size: 0.9rem;
+}
+
+/* ── Feature cards ── */
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.feature-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r);
+  padding: 1.25rem 1.1rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.feature-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.feature-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0.2rem 0 0;
+}
+
+.feature-body {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .landing { padding: 2.5rem 1.25rem 4rem; gap: 2.5rem; }
+  .features { grid-template-columns: 1fr; }
+}

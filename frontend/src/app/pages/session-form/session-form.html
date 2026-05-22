@@ -1,8 +1,8 @@
 <div class="page">
   <div class="form-header">
-    <a routerLink="/" class="back-link">← Back</a>
-    <h1>Create a Study Session</h1>
-    <p>Fill in the details and invite classmates to join.</p>
+    <a routerLink="/sessions" class="back-link">← Back</a>
+    <h1>{{ isEdit ? 'Edit Session' : 'Create a Study Session' }}</h1>
+    <p>{{ isEdit ? 'Update the session details below.' : 'Fill in the details and invite classmates to join.' }}</p>
   </div>
 
   <form class="form-card" [formGroup]="form" (ngSubmit)="submit()">
@@ -117,9 +117,9 @@
     @if (submitError()) { <p class="submit-error">{{ submitError() }}</p> }
 
     <div class="form-actions">
-      <a routerLink="/" class="btn-secondary">Cancel</a>
+      <a routerLink="/sessions" class="btn-secondary">Cancel</a>
       <button type="submit" class="btn-submit" [disabled]="submitting()">
-        {{ submitting() ? 'Creating…' : 'Create Session' }}
+        {{ submitting() ? (isEdit ? 'Saving…' : 'Creating…') : (isEdit ? 'Save changes' : 'Create Session') }}
       </button>
     </div>
   </form>

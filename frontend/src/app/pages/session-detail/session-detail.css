@@ -120,6 +120,35 @@
 
 .participant { display: flex; align-items: center; gap: 0.6rem; font-size: 0.875rem; }
 
+.participant-name {
+  position: relative;
+  cursor: default;
+}
+
+.participant-name[data-tip]:not([data-tip=""])::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  background: var(--color-text);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.15s, transform 0.15s;
+  z-index: 10;
+}
+
+.participant-name[data-tip]:not([data-tip=""]):hover::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .avatar {
   width: 28px;
   height: 28px;
@@ -208,19 +237,25 @@
 
 .divider { border: none; border-top: 1px solid var(--color-border); margin: 0.1rem 0; }
 
+.btn-edit,
 .btn-delete {
+  display: block;
+  width: fit-content;
   padding: 0.45rem 1rem;
   background: none;
-  border: none;
+  border: 1px solid var(--color-border);
   border-radius: var(--r-sm);
   font-size: 0.8rem;
-  color: var(--color-text-subtle);
-  cursor: pointer;
   font-family: inherit;
-  transition: color 0.15s;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: border-color 0.15s, color 0.15s;
 }
 
-.btn-delete:hover { color: var(--color-error); }
+.btn-edit:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.btn-delete:hover { border-color: var(--color-error); color: var(--color-error); }
 
 /* ── Chat column ─────────────────────────────── */
 .chat-col {

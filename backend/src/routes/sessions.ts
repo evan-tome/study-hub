@@ -8,8 +8,8 @@ const enrich = (s: any) => ({ ...s, courseName: getCachedCourseName(s.courseCode
 const router = Router();
 
 const include = {
-  owner: { select: { id: true, name: true } },
-  participants: { select: { id: true, name: true } },
+  owner: { select: { id: true, name: true, program: true, year: true } },
+  participants: { select: { id: true, name: true, program: true, year: true } },
 } as const;
 
 router.get('/', async (req, res) => {
@@ -61,6 +61,39 @@ router.get('/:id', async (req, res) => {
     res.json(enrich(session));
   } catch {
     res.status(500).json({ error: 'Failed to fetch session' });
+  }
+});
+
+router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
+  try {
+    const id = String(req.params.id);
+    const session = await prisma.studySession.findUnique({ where: { id } });
+    if (!session) { res.status(404).json({ error: 'Session not found' }); return; }
+    if (session.ownerId !== req.user!.userId) {
+      res.status(403).json({ error: 'Only the session owner can edit it' });
+      return;
+    }
+    const { courseCode, topics, description, startTime, endTime, locationType, location } = req.body;
+    if (!courseCode || !description || !startTime || !endTime || !locationType || !location) {
+      res.status(400).json({ error: 'Missing required fields' });
+      return;
+    }
+    const updated = await prisma.studySession.update({
+      where: { id },
+      data: {
+        courseCode,
+        topics: Array.isArray(topics) ? topics : [],
+        description,
+        startTime: new Date(startTime),
+        endTime: new Date(endTime),
+        locationType,
+        location,
+      },
+      include,
+    });
+    res.json(enrich(updated));
+  } catch {
+    res.status(500).json({ error: 'Failed to update session' });
   }
 });
 

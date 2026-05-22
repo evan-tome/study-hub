@@ -1,6 +1,6 @@
 import { Component, signal, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -17,7 +17,8 @@ export class Register {
 
   form = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
-    email: ['', [Validators.required, Validators.email]],
+    email: ['', [Validators.required, Validators.email, (c: AbstractControl): ValidationErrors | null =>
+      c.value && !c.value.toLowerCase().endsWith('@ontariotechu.net') ? { otuEmail: true } : null]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     program: [''],
   });

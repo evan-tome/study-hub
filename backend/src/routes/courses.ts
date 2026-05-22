@@ -2,13 +2,8 @@ import { Router } from 'express';
 
 const router = Router();
 
-const BANNER = 'https://ssp.mycampus.ca/StudentRegistrationSsb/ssb';
 const ACALOG = 'https://calendar.ontariotechu.ca';
-const MEP = 'UOIT';
 const UA = 'StudyHub/1.0';
-
-interface BannerTerm  { code: string; description: string }
-interface BannerCombo { code: string; description: string }
 
 // 24-hour cache
 let cache: { courses: { code: string; name: string }[]; at: number } | null = null;
@@ -54,47 +49,12 @@ async function fetchCalendarNames(): Promise<Map<string, string>> {
   return map;
 }
 
-/** Pick the current active registration term (first without "View Only"). */
-async function activeTerm(): Promise<string> {
-  const r = await fetch(
-    `${BANNER}/classSearch/getTerms?searchTerm=&offset=1&max=10&mepCode=${MEP}`,
-    { headers: { 'User-Agent': UA } }
-  );
-  if (!r.ok) throw new Error(`getTerms ${r.status}`);
-  const terms = await r.json() as BannerTerm[];
-  const term = terms.find(t => !/view only/i.test(t.description)) ?? terms[0];
-  if (!term) throw new Error('no terms');
-  return term.code;
-}
-
-/** Fetch course codes offered in the given term from Banner SSB. */
-async function fetchBannerCodes(term: string): Promise<BannerCombo[]> {
-  const r = await fetch(
-    `${BANNER}/classSearch/get_subjectcoursecombo?searchTerm=&term=${term}&offset=1&max=999&mepCode=${MEP}`,
-    { headers: { 'User-Agent': UA } }
-  );
-  if (!r.ok) throw new Error(`get_subjectcoursecombo ${r.status}`);
-  return r.json() as Promise<BannerCombo[]>;
-}
-
 async function buildCourseList(): Promise<{ code: string; name: string; faculty: string }[]> {
-  const [names, termCode] = await Promise.all([
-    fetchCalendarNames(),
-    activeTerm(),
-  ]);
-  const bannerCodes = await fetchBannerCodes(termCode);
-  console.log(`[courses] calendar: ${names.size} names | Banner term ${termCode}: ${bannerCodes.length} codes`);
-
-  return bannerCodes
-    .map(c => {
-      // "CSCI1020U" → "CSCI 1020U"
-      const code = c.code.replace(/([A-Z]+)(\d)/, '$1 $2');
-      // Look up real name from calendar, fall back to subject area from Banner
-      const subjectArea = decodeHtml(c.description.replace(/^\S+\s*/, '').trim());
-      const name = names.get(code) ?? subjectArea;
-      return { code, name, faculty: c.code.replace(/\d.*/, '') };
-    })
-    .sort((a: any, b: any) => a.code.localeCompare(b.code));
+  const names = await fetchCalendarNames();
+  console.log(`[courses] calendar: ${names.size} courses`);
+  return Array.from(names.entries())
+    .map(([code, name]) => ({ code, name, faculty: code.replace(/\s.*/, '') }))
+    .sort((a, b) => a.code.localeCompare(b.code));
 }
 
 router.get('/', async (_req, res) => {

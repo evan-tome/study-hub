@@ -6,12 +6,13 @@ import { FormsModule } from '@angular/forms';
 import { SessionService } from '../../services/session.service';
 import { AuthService } from '../../services/auth.service';
 import { StudySession, ChatMessage } from '../../models/session.model';
+import { ConfirmDialog } from '../../components/confirm-dialog/confirm-dialog';
 
 
 @Component({
   selector: 'app-session-detail',
   standalone: true,
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, ConfirmDialog],
   templateUrl: './session-detail.html',
   styleUrl: './session-detail.css',
 })
@@ -27,6 +28,7 @@ export class SessionDetail implements OnInit, OnDestroy, AfterViewChecked {
   loading = signal(true);
   error = signal('');
   actionLoading = signal(false);
+  dialog = signal<{ title: string; message: string; onConfirm: () => void } | null>(null);
 
   messages = signal<ChatMessage[]>([]);
   messageInput = '';
@@ -128,11 +130,16 @@ export class SessionDetail implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   deleteSession() {
-    if (!confirm('Delete this session?')) return;
-    this.sessionService.deleteSession(this.session()!.id).subscribe({
-      next: () => this.router.navigate(['/']),
+    const s = this.session()!;
+    this.dialog.set({
+      title: 'Delete session',
+      message: `Delete "${s.courseCode} — ${s.description.slice(0, 80)}${s.description.length > 80 ? '…' : ''}"? Its chat messages will also be removed. This cannot be undone.`,
+      onConfirm: () => this.sessionService.deleteSession(s.id).subscribe({ next: () => this.router.navigate(['/sessions']) }),
     });
   }
+
+  confirmDialog() { this.dialog()?.onConfirm(); this.dialog.set(null); }
+  cancelDialog()  { this.dialog.set(null); }
 
   formatDate(iso: string) {
     return new Date(iso).toLocaleDateString('en-CA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -154,5 +161,12 @@ export class SessionDetail implements OnInit, OnDestroy, AfterViewChecked {
 
   isMine(msg: ChatMessage): boolean {
     return msg.author.id === this.auth.currentUser()?.id;
+  }
+
+  participantTip(p: { name: string; program: string; year: number }): string | null {
+    const parts: string[] = [];
+    if (p.program) parts.push(p.program);
+    if (p.year >= 1) parts.push(`Year ${p.year}`);
+    return parts.length ? parts.join(' · ') : null;
   }
 }

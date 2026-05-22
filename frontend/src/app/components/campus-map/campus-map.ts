@@ -7,15 +7,15 @@ import { StudySession } from '../../models/session.model';
 
 // [lng, lat] — MapLibre / GeoJSON order
 const BUILDINGS: Record<string, { coords: [number, number]; label: string }> = {
-  ERC:   { coords: [-78.89620, 43.94530], label: 'Engineering Research Centre' },
-  ACE:   { coords: [-78.89760, 43.94480], label: 'Academic & Collaborative Environment' },
-  SIRC:  { coords: [-78.89580, 43.94610], label: 'Software & Informatics Research Centre' },
-  OPG:   { coords: [-78.89650, 43.94660], label: 'OPG Engineering Building' },
-  SCI:    { coords: [-78.89700, 43.94390], label: 'Science Building' },
-  LIB:   { coords: [-78.89730, 43.94510], label: 'Library' },
-  HA:    { coords: [-78.89620, 43.94440], label: 'Health Arts Building' },
-  BIT: { coords: [-78.89500, 43.94550], label: 'Business & Information Technology Building' },
-  UHQ:   { coords: [-78.89680, 43.94500], label: 'University Headquarters' },
+  SCI:    { coords: [-78.89630473936765, 43.944542718281625], label: 'Science Building' },
+  BIT: { coords: [-78.89597448487845, 43.94519984975245], label: 'Business & Information Technology Building' },
+  ERC:   { coords: [-78.89627409103717, 43.94567719866937], label: 'Engineering Research Centre' },
+  SHA: { coords: [-78.89643660007148, 43.94612175302942], label: 'Shawenjigewining Hall' },
+  ACE:   { coords: [-78.89932126226566, 43.945645698145235], label: 'Academic & Collaborative Environment' },
+  OPG:   { coords: [-78.8983223079879, 43.945759800878946], label: 'OPG Engineering Building' },
+  SIRC:  { coords: [-78.89913953129742, 43.947791624575046], label: 'Software & Informatics Research Centre' },
+  LIB:   { coords: [-78.89728975390315, 43.94585734955008], label: 'Library' },
+  DC:   { coords: [-78.89603854208995, 43.94389457591058], label: 'Durham College' },
 };
 
 function extractBuilding(location: string): string | null {
@@ -32,10 +32,27 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit', hour12: true });
 }
 
+function sessionStatus(start: string, end: string): 'ongoing' | 'ended' | null {
+  const now = Date.now();
+  const s = new Date(start).getTime();
+  const e = new Date(end).getTime();
+  if (now >= s && now <= e) return 'ongoing';
+  if (now > e) return 'ended';
+  return null;
+}
+
 function formatDay(iso: string): string {
   const d = new Date(iso);
   if (d.toDateString() === new Date().toDateString()) return 'Today';
   return d.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+interface MarkerEntry {
+  marker: any;
+  badge: HTMLElement;
+  popup: any;
+  building: { coords: [number, number]; label: string };
+  sessions: StudySession[];
 }
 
 @Component({
@@ -47,6 +64,8 @@ function formatDay(iso: string): string {
 })
 export class CampusMap implements AfterViewInit, OnDestroy {
   sessions = input<StudySession[]>([]);
+  userCourses = input<string[]>([]);
+  activeSessionId = input<string | null>(null);
 
   @ViewChild('mapEl') mapEl!: ElementRef<HTMLDivElement>;
 
@@ -54,12 +73,19 @@ export class CampusMap implements AfterViewInit, OnDestroy {
   private map: any = null;
   private ml: any = null;
   private markers: any[] = [];
+  private markerData = new Map<string, MarkerEntry>();
   private mapLoaded = false;
 
   constructor() {
     effect(() => {
-      this.sessions(); // track signal changes
+      this.sessions();
+      this.userCourses();
       if (this.mapLoaded) this.placeMarkers();
+    });
+
+    effect(() => {
+      const activeId = this.activeSessionId();
+      if (this.mapLoaded) this.updateActiveState(activeId);
     });
   }
 
@@ -85,15 +111,30 @@ export class CampusMap implements AfterViewInit, OnDestroy {
     });
   }
 
+  private buildPopupHtml(building: MarkerEntry['building'], sessions: StudySession[], activeId: string | null): string {
+    return `
+      <div class="map-popup">
+        <p class="popup-building">${building.label}</p>
+        ${sessions.map((s) => `
+          <a href="/sessions/${s.id}" class="popup-session${s.id === activeId ? ' popup-session--active' : ''}">
+            <span class="popup-course">${s.courseCode} - ${s.courseName}</span>
+            <span class="popup-desc">${s.description.length > 58 ? s.description.slice(0, 58) + '…' : s.description}</span>
+            <span class="popup-time">${sessionStatus(s.startTime, s.endTime) === 'ongoing' ? '<span class="popup-status ongoing">Live</span>' : sessionStatus(s.startTime, s.endTime) === 'ended' ? '<span class="popup-status ended">Ended</span>' : ''}${formatDay(s.startTime)} · ${formatTime(s.startTime)} - ${formatTime(s.endTime)}</span>
+          </a>`).join('')}
+      </div>`;
+  }
+
   private placeMarkers() {
-    // Clear old markers
     this.markers.forEach((m) => m.remove());
     this.markers = [];
+    this.markerData.clear();
 
-    // Group in-person sessions by building code
+    const enrolled = new Set(this.userCourses());
+
     const groups = new Map<string, StudySession[]>();
     for (const s of this.sessions()) {
       if (s.locationType !== 'room') continue;
+      if (sessionStatus(s.startTime, s.endTime) === 'ended') continue;
       const code = extractBuilding(s.location);
       if (!code) continue;
       if (!groups.has(code)) groups.set(code, []);
@@ -102,45 +143,39 @@ export class CampusMap implements AfterViewInit, OnDestroy {
 
     for (const [code, sessions] of groups) {
       const building = BUILDINGS[code];
+      const hasEnrolled = enrolled.size > 0 && sessions.some((s) => enrolled.has(s.courseCode));
 
-      // Outer wrapper - MapLibre owns its transform for positioning
       const el = document.createElement('div');
       el.className = 'map-marker-wrap';
-      // Inner badge - safe to scale on hover without fighting MapLibre
       const badge = document.createElement('div');
-      badge.className = 'map-badge';
+      badge.className = 'map-badge' + (hasEnrolled ? ' map-badge--enrolled' : '');
       badge.textContent = String(sessions.length);
       el.appendChild(badge);
-
-      // Popup HTML
-      const html = `
-        <div class="map-popup">
-          <p class="popup-building">${building.label}</p>
-          ${sessions
-            .map(
-              (s) => `
-            <a href="/sessions/${s.id}" class="popup-session">
-              <span class="popup-course">${s.courseCode}</span>
-              <span class="popup-desc">${s.description.length > 58 ? s.description.slice(0, 58) + '…' : s.description}</span>
-              <span class="popup-time">${formatDay(s.startTime)} · ${formatTime(s.startTime)}</span>
-            </a>`
-            )
-            .join('')}
-        </div>`;
 
       const popup = new this.ml.Popup({
         closeButton: false,
         maxWidth: '290px',
         className: 'otu-popup',
         offset: 22,
-      }).setHTML(html);
+      }).setHTML(this.buildPopupHtml(building, sessions, null));
 
       const marker = new this.ml.Marker({ element: el })
         .setLngLat(building.coords)
         .setPopup(popup)
         .addTo(this.map);
 
+      this.markerData.set(code, { marker, badge, popup, building, sessions });
       this.markers.push(marker);
+    }
+
+    this.updateActiveState(this.activeSessionId());
+  }
+
+  private updateActiveState(activeId: string | null) {
+    for (const [, data] of this.markerData) {
+      const isActive = activeId !== null && data.sessions.some((s) => s.id === activeId);
+      data.badge.classList.toggle('map-badge--active', isActive);
+      data.popup.setHTML(this.buildPopupHtml(data.building, data.sessions, activeId));
     }
   }
 }

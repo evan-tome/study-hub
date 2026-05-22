@@ -3,6 +3,10 @@ import bcrypt from 'bcryptjs';
 import prisma from '../db';
 import { requireAuth, signToken, AuthRequest } from '../middleware/auth';
 
+const ADMIN_EMAILS = new Set(
+  (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim()).filter(Boolean)
+);
+
 const router = Router();
 
 router.post('/register', async (req, res) => {
@@ -10,6 +14,10 @@ router.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
       res.status(400).json({ error: 'Name, email, and password are required' });
+      return;
+    }
+    if (!String(email).toLowerCase().endsWith('@ontariotechu.net')) {
+      res.status(400).json({ error: 'You must use an @ontariotechu.net email address' });
       return;
     }
     if (password.length < 6) {
@@ -27,7 +35,7 @@ router.post('/register', async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({ data: { name, email, passwordHash, program, year: Number(year) } });
 
-    const token = signToken({ userId: user.id, name: user.name, email: user.email });
+    const token = signToken({ userId: user.id, name: user.name, email: user.email, isAdmin: ADMIN_EMAILS.has(user.email) });
     res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch {
     res.status(500).json({ error: 'Registration failed' });
@@ -48,7 +56,7 @@ router.post('/login', async (req, res) => {
       return;
     }
 
-    const token = signToken({ userId: user.id, name: user.name, email: user.email });
+    const token = signToken({ userId: user.id, name: user.name, email: user.email, isAdmin: ADMIN_EMAILS.has(user.email) });
     res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch {
     res.status(500).json({ error: 'Login failed' });

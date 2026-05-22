@@ -16,9 +16,13 @@
       <div class="field">
         <label for="email">Email</label>
         <input id="email" type="email" formControlName="email"
-          placeholder="you@ontariotechu.ca" [class.invalid]="fieldError('email')" />
+          placeholder="you@ontariotechu.net" [class.invalid]="fieldError('email')" />
         @if (fieldError('email')) {
-          <span class="error-msg">Enter a valid email address.</span>
+          @if (form.get('email')?.errors?.['otuEmail']) {
+            <span class="error-msg">Must be an @ontariotechu.net address.</span>
+          } @else {
+            <span class="error-msg">Enter a valid email address.</span>
+          }
         }
       </div>
 

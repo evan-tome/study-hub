@@ -1,26 +1,36 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { NgTemplateOutlet } from '@angular/common';
 import { SessionService } from '../../services/session.service';
+import { AuthService } from '../../services/auth.service';
 import { CampusMap } from '../../components/campus-map/campus-map';
-import { StudySession } from '../../models/session.model';
+import { RecommendedSession, StudySession } from '../../models/session.model';
 
 
 @Component({
   selector: 'app-session-list',
   standalone: true,
-  imports: [RouterLink, FormsModule, CampusMap],
+  imports: [RouterLink, FormsModule, CampusMap, NgTemplateOutlet],
   templateUrl: './session-list.html',
   styleUrl: './session-list.css',
 })
 export class SessionList implements OnInit {
   private sessionService = inject(SessionService);
+  private auth = inject(AuthService);
+
+  currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
 
   sessions = signal<StudySession[]>([]);
+  userCourses = signal<string[]>([]);
+  recommendations = signal<RecommendedSession[]>([]);
+  hoveredSessionId = signal<string | null>(null);
   loading = signal(true);
   error = signal('');
   searchQuery = signal('');
   courseFilter = signal('');
+
+  showEnded = signal(false);
 
   usedCourses = computed(() => {
     const seen = new Map<string, string>();
@@ -48,7 +58,61 @@ export class SessionList implements OnInit {
     });
   });
 
-  ngOnInit() { this.loadSessions(); }
+  myJoinedSessions = computed(() => {
+    const uid = this.currentUserId();
+    if (!uid) return [];
+    return this.filteredSessions().filter(
+      (s) => this.sessionStatus(s.startTime, s.endTime) !== 'ended' &&
+             s.participants.some((p) => p.id === uid)
+    );
+  });
+
+  myCourseSessions = computed(() => {
+    const uid = this.currentUserId();
+    const enrolled = new Set(this.userCourses());
+    if (enrolled.size === 0) return [];
+    return this.filteredSessions().filter(
+      (s) => this.sessionStatus(s.startTime, s.endTime) !== 'ended' &&
+             !(uid && s.participants.some((p) => p.id === uid)) &&
+             enrolled.has(s.courseCode)
+    );
+  });
+
+  otherActiveSessions = computed(() => {
+    const uid = this.currentUserId();
+    const enrolled = new Set(this.userCourses());
+    return this.filteredSessions().filter(
+      (s) => this.sessionStatus(s.startTime, s.endTime) !== 'ended' &&
+             !(uid && s.participants.some((p) => p.id === uid)) &&
+             !enrolled.has(s.courseCode)
+    );
+  });
+
+  endedSessions = computed(() =>
+    this.filteredSessions().filter((s) => this.sessionStatus(s.startTime, s.endTime) === 'ended')
+  );
+
+  activeSectionCount = computed(() =>
+    (this.myJoinedSessions().length > 0 ? 1 : 0) +
+    (this.myCourseSessions().length > 0 ? 1 : 0) +
+    (this.otherActiveSessions().length > 0 ? 1 : 0)
+  );
+
+  ngOnInit() {
+    this.loadSessions();
+    this.loadProfile();
+    if (this.auth.isLoggedIn()) {
+      this.sessionService.getRecommendations().subscribe({
+        next: (r) => this.recommendations.set(r),
+      });
+    }
+  }
+
+  loadProfile() {
+    this.sessionService.getProfile().subscribe({
+      next: (p) => this.userCourses.set(p.courses ?? []),
+    });
+  }
 
   loadSessions() {
     this.loading.set(true);
@@ -64,6 +128,15 @@ export class SessionList implements OnInit {
 
   formatTime(iso: string): string {
     return new Date(iso).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit', hour12: true });
+  }
+
+  sessionStatus(start: string, end: string): 'ongoing' | 'ended' | null {
+    const now = Date.now();
+    const s = new Date(start).getTime();
+    const e = new Date(end).getTime();
+    if (now >= s && now <= e) return 'ongoing';
+    if (now > e) return 'ended';
+    return null;
   }
 
   formatDate(iso: string): string {

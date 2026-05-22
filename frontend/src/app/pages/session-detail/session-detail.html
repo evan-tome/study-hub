@@ -1,5 +1,5 @@
 <div class="page">
-  <a routerLink="/" class="back-link">← Back to sessions</a>
+  <a routerLink="/sessions" class="back-link">← Back to sessions</a>
 
   @if (loading()) {
     <div class="state-msg">Loading…</div>
@@ -51,7 +51,7 @@
             @for (p of s.participants; track p.id) {
               <li class="participant">
                 <span class="avatar">{{ p.name[0].toUpperCase() }}</span>
-                <span>{{ p.name }}</span>
+                <span class="participant-name" [attr.data-tip]="participantTip(p)">{{ p.name }}</span>
                 @if (p.id === s.owner.id) {
                   <span class="owner-tag">host</span>
                 }
@@ -79,6 +79,7 @@
 
           @if (isOwner()) {
             <hr class="divider" />
+            <a [routerLink]="['/sessions', s.id, 'edit']" class="btn-edit">Edit session</a>
             <button class="btn-delete" (click)="deleteSession()">Delete session</button>
           }
         </div>
@@ -124,3 +125,13 @@
     </div>
   }
 </div>
+
+@if (dialog()) {
+  <app-confirm-dialog
+    [title]="dialog()!.title"
+    [message]="dialog()!.message"
+    confirmLabel="Delete"
+    (confirmed)="confirmDialog()"
+    (cancelled)="cancelDialog()"
+  />
+}

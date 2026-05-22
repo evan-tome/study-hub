@@ -4,8 +4,11 @@
       <span class="brand-name">StudyHub</span>
     </a>
     <div class="nav-links">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">Browse</a>
+      <a routerLink="/sessions" routerLinkActive="active" class="nav-link">Browse</a>
       @if (auth.isLoggedIn()) {
+        @if (auth.currentUser()?.isAdmin) {
+          <a routerLink="/admin" routerLinkActive="active" class="nav-link">Admin</a>
+        }
         <a routerLink="/sessions/new" class="btn-create">+ Create Session</a>
         <div class="user-menu">
           <a routerLink="/profile" class="user-name">{{ auth.currentUser()?.name }}</a>
