@@ -170,15 +170,11 @@
     <div class="card-top">
       <span class="course-code">{{ s.courseCode }}</span>
       <div class="card-badges">
-        @if (live) { <span class="badge badge--live">Live</span> }
         @if (s.owner?.id === currentUserId()) {
           <span class="badge badge--host">Hosting</span>
         } @else if (mine) {
           <span class="badge badge--joined">Joined</span>
         }
-        <span class="badge" [class.badge--online]="s.locationType === 'online'" [class.badge--loc]="s.locationType !== 'online'">
-          {{ s.locationType === 'online' ? 'Online' : 'In-Person' }}
-        </span>
       </div>
     </div>
 
@@ -188,29 +184,63 @@
 
     @if (s.topics.length > 0) {
       <div class="card-topics">
-        @for (t of s.topics.slice(0, 3); track t) {
+        @for (t of s.topics.slice(0, 2); track t) {
           <span class="topic-chip">{{ t }}</span>
         }
-        @if (s.topics.length > 3) {
-          <span class="topic-chip topic-chip--more">+{{ s.topics.length - 3 }}</span>
+        @if (s.topics.length > 2) {
+          <span class="topic-chip topic-chip--more">+{{ s.topics.length - 2 }}</span>
         }
       </div>
     }
 
     <div class="card-footer">
+
+      <div class="card-relative" [class.card-relative--live]="live">
+        {{ relativeTime(s) }}
+      </div>
+
       <div class="card-time-row">
         {{ formatDate(s.startTime) }} · {{ formatTime(s.startTime) }} – {{ formatTime(s.endTime) }}
         <span class="card-duration">{{ duration(s.startTime, s.endTime) }}</span>
       </div>
-      <div class="card-meta-row">
-        <span class="card-host">{{ s.owner.name }}</span>
-        @if (s.locationType === 'room' && s.location) {
-          <span class="meta-dot">·</span>
-          <span class="card-loc">📍 {{ s.location }}</span>
+
+      <div class="card-location-row" [class.loc--online]="s.locationType === 'online'">
+        @if (s.locationType === 'room') {
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="14" height="14" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+          </svg>
+          <span class="loc-label">In-Person</span>
+          @if (s.location) {
+            <span class="loc-sep">·</span>
+            <span class="loc-place">{{ s.location }}</span>
+          }
+        } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="14" height="14" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
+          </svg>
+          <span class="loc-label">Online</span>
+          @if (s.location && s.participants.some(p => p.id === currentUserId())) {
+            <span class="loc-sep">·</span>
+            <a class="loc-link" [href]="s.location" target="_blank" rel="noopener"
+               (click)="$event.stopPropagation()">Join link</a>
+          }
         }
-        <span class="meta-dot">·</span>
-        <span class="card-pax">👥 {{ s.participants.length }}{{ s.maxParticipants ? '/' + s.maxParticipants : '' }}</span>
       </div>
+
+      <div class="card-meta-row">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="13" height="13" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+        </svg>
+        <span class="meta-label">Host:</span>
+        <span class="card-host">{{ s.owner.name }}</span>
+        <span class="meta-dot">·</span>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="13" height="13" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+        </svg>
+        <span class="card-pax">{{ s.participants.length }}{{ s.maxParticipants ? '/' + s.maxParticipants : '' }}</span>
+      </div>
+
     </div>
 
   </a>

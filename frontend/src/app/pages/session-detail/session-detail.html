@@ -39,7 +39,11 @@
         <section class="section">
           <h2 class="section-title">Where</h2>
           @if (s.locationType === 'online') {
-            <div class="info-row"><span class="info-icon">🔗</span><a [href]="s.location" target="_blank" rel="noopener" class="link">{{ s.location }}</a></div>
+            @if (isParticipant() || isOwner()) {
+              <div class="info-row"><span class="info-icon">🔗</span><a [href]="s.location" target="_blank" rel="noopener" class="link">{{ s.location }}</a></div>
+            } @else {
+              <div class="info-row"><span class="info-icon">💻</span><span class="info-muted">Join to see the meeting link</span></div>
+            }
           } @else {
             <div class="info-row"><span class="info-icon">📍</span><span>{{ s.location }}</span></div>
           }

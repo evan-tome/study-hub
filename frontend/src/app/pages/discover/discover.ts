@@ -218,4 +218,27 @@ export class Discover implements OnInit {
     const h = Math.floor(mins / 60), m = mins % 60;
     return h ? (m ? `${h}h ${m}m` : `${h}h`) : `${mins}m`;
   }
+
+  relativeTime(s: StudySession): string {
+    const now = Date.now();
+    const start = new Date(s.startTime).getTime();
+    const end = new Date(s.endTime).getTime();
+
+    if (now >= start && now <= end) {
+      const mins = Math.round((end - now) / 60000);
+      if (mins <= 1) return 'Ending now';
+      if (mins < 60) return `Ends in ${mins}m`;
+      const h = Math.floor(mins / 60), m = mins % 60;
+      return `Ends in ${m ? `${h}h ${m}m` : `${h}h`}`;
+    }
+
+    const mins = Math.round((start - now) / 60000);
+    if (mins <= 0) return 'Starting now';
+    if (mins < 60) return `In ${mins}m`;
+    const h = Math.floor(mins / 60), m = mins % 60;
+    if (h < 24) return `In ${m ? `${h}h ${m}m` : `${h}h`}`;
+    const days = Math.floor(h / 24);
+    if (days === 1) return 'Tomorrow';
+    return `In ${days} days`;
+  }
 }

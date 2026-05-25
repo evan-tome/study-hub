@@ -102,6 +102,7 @@
 }
 
 .info-icon { flex-shrink: 0; }
+.info-muted { color: var(--color-text-subtle); font-style: italic; }
 
 .link { color: var(--color-primary); word-break: break-all; }
 .link:hover { text-decoration: underline; }
