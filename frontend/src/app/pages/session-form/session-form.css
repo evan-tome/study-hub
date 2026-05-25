@@ -217,7 +217,7 @@
   text-overflow: ellipsis;
 }
 
-.opt-faculty {
+.opt-department {
   font-size: 0.68rem;
   color: var(--color-text-subtle);
   white-space: nowrap;

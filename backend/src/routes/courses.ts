@@ -55,12 +55,12 @@ async function fetchCalendarNames(): Promise<Map<string, string>> {
   }
   return map;
 }
- // build the course list by fetching from Acalog and formatting it as an array of { code, name, faculty }
-async function buildCourseList(): Promise<{ code: string; name: string; faculty: string }[]> {
+ // build the course list by fetching from Acalog and formatting it as an array of { code, name, department }
+async function buildCourseList(): Promise<{ code: string; name: string; department: string }[]> {
   const names = await fetchCalendarNames();
   console.log(`[courses] calendar: ${names.size} courses`);
   return Array.from(names.entries())
-    .map(([code, name]) => ({ code, name, faculty: code.replace(/\s.*/, '') })) // extract faculty from course code (e.g. "CSCI" from "CSCI 1020U")
+    .map(([code, name]) => ({ code, name, department: code.replace(/\s.*/, '') })) // extract department from course code (e.g. "CSCI" from "CSCI 1020U")
     .sort((a, b) => a.code.localeCompare(b.code)); // sort courses by code alphabetically
 }
 

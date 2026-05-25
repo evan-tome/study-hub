@@ -75,7 +75,7 @@ export class SessionForm implements OnInit {
     this.sessionService.getSession(this.editId!).subscribe({
       next: (s) => {
         const course = courses.find((c) => c.code === s.courseCode)
-          ?? { code: s.courseCode, name: s.courseName, faculty: '' };
+          ?? { code: s.courseCode, name: s.courseName, department: '' };
         this.selectedCourse.set(course);
         this.courseQuery.set(course.code + ' — ' + course.name);
         this.locationType.set(s.locationType);
