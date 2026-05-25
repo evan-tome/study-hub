@@ -9,12 +9,13 @@ import { StudySession } from '../../models/session.model';
 const BUILDINGS: Record<string, { coords: [number, number]; label: string }> = {
   SCI:    { coords: [-78.89630473936765, 43.944542718281625], label: 'Science Building' },
   BIT: { coords: [-78.89597448487845, 43.94519984975245], label: 'Business & Information Technology Building' },
-  ERC:   { coords: [-78.89627409103717, 43.94567719866937], label: 'Engineering Research Centre' },
+  ERC:   { coords: [-78.89627409103717, 43.94567719866937], label: 'Energy Research Centre' },
   SHA: { coords: [-78.89643660007148, 43.94612175302942], label: 'Shawenjigewining Hall' },
   ACE:   { coords: [-78.89932126226566, 43.945645698145235], label: 'Academic & Collaborative Environment' },
   OPG:   { coords: [-78.8983223079879, 43.945759800878946], label: 'OPG Engineering Building' },
   SIRC:  { coords: [-78.89913953129742, 43.947791624575046], label: 'Software & Informatics Research Centre' },
   LIB:   { coords: [-78.89728975390315, 43.94585734955008], label: 'Library' },
+  CRWC:   { coords: [-78.89603854208995, 43.94389457591058], label: 'Campus Recreation and Wellness Centre' },
   DC:   { coords: [-78.89603854208995, 43.94389457591058], label: 'Durham College' },
 };
 
