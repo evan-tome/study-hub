@@ -1,7 +1,7 @@
 <div class="page">
   <div class="hero">
     <h1>Inbox</h1>
-    <p>Post-session check-ins from sessions you hosted.</p>
+    <p>Notifications from sessions you're part of.</p>
   </div>
 
   @if (loading()) {
@@ -11,51 +11,76 @@
   } @else if (notifications().length === 0) {
     <div class="state-msg">
       <p>No notifications yet.</p>
-      <p class="hint">You'll get a check-in here after each session you host ends.</p>
+      <p class="hint">You'll see activity here from sessions you host or join.</p>
     </div>
   } @else {
     <div class="notif-list">
       @for (notif of notifications(); track notif.id) {
-        <div class="notif-card" [class.unread]="!notif.read" (mouseenter)="markRead(notif)">
+        <div class="notif-card"
+          [class.unread]="!notif.read"
+          [class.card--created]="notif.type === 'session_created'"
+          [class.card--ended]="notif.type === 'session_ended'"
+          [class.card--request]="notif.type === 'join_request'"
+          [class.card--approved]="notif.type === 'join_approved'"
+          (mouseenter)="markRead(notif)">
+
           <div class="notif-header">
-            <div class="notif-course">
-              <span class="notif-type-label"
-                [class.type-new]="notif.type === 'session_created'"
-                [class.type-ended]="notif.type === 'session_ended'"
-                [class.type-request]="notif.type === 'join_request'"
-                [class.type-approved]="notif.type === 'join_approved'">
-                {{ notif.type === 'session_created' ? 'New session'
-                 : notif.type === 'session_ended' ? 'Session ended'
-                 : notif.type === 'join_request' ? 'Join request'
-                 : 'Request approved' }}
-              </span>
-              <span class="course-code">{{ notif.session.courseCode }}</span>
-              <span class="course-name">{{ notif.session.courseName }}</span>
-              @if (notif.session.endedEarly) {
-                <span class="ended-early-badge">Ended early</span>
+            <span class="notif-kind"
+              [class.kind--created]="notif.type === 'session_created'"
+              [class.kind--ended]="notif.type === 'session_ended'"
+              [class.kind--request]="notif.type === 'join_request'"
+              [class.kind--approved]="notif.type === 'join_approved'">
+
+              @if (notif.type === 'session_created') {
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="14" height="14">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                </svg>
+                New session in your course
+              } @else if (notif.type === 'session_ended') {
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="14" height="14">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5" />
+                </svg>
+                Session ended
+              } @else if (notif.type === 'join_request') {
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="14" height="14">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM4 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 10.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+                </svg>
+                Join request
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="14" height="14">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                </svg>
+                Request approved
               }
-            </div>
+            </span>
             <div class="notif-header-right">
               <span class="notif-time">{{ formatRelativeTime(notif.createdAt) }}</span>
               @if (!notif.read) {
-                <span class="unread-dot" title="Unread"></span>
+                <span class="unread-dot"></span>
               }
             </div>
+          </div>
+
+          <div class="notif-session">
+            <span class="course-code">{{ notif.session.courseCode }}</span>
+            <span class="session-title">{{ notif.session.courseName }}</span>
+            @if (notif.session.endedEarly) {
+              <span class="ended-early-note">· ended early</span>
+            }
           </div>
 
           <p class="notif-desc">{{ notif.session.description }}</p>
 
-          <div class="notif-meta">
-            📅 {{ formatDate(notif.session.startTime) }},
-            {{ formatTime(notif.session.startTime) }} – {{ formatTime(notif.session.endTime) }}
-          </div>
+          <p class="notif-meta">
+            {{ formatDate(notif.session.startTime) }} · {{ formatTime(notif.session.startTime) }} – {{ formatTime(notif.session.endTime) }}
+          </p>
 
           @if (notif.type === 'session_ended') {
-            <div class="attendance-section">
+            <div class="notif-section">
               @if (notif.attendeeCount !== null) {
-                <div class="attendance-recorded">
+                <p class="attendance-recorded">
                   ✅ <strong>{{ notif.attendeeCount }}</strong> {{ notif.attendeeCount === 1 ? 'person' : 'people' }} attended
-                </div>
+                </p>
               } @else {
                 <div class="attendance-prompt">
                   <label class="attendance-label">How many people showed up?</label>
@@ -82,7 +107,7 @@
           }
 
           @if (notif.type === 'join_request') {
-            <div class="join-request-section">
+            <div class="notif-section">
               <p class="join-requester">
                 <strong>{{ notif.requesterName ?? 'Someone' }}</strong> wants to join this session.
               </p>
@@ -102,20 +127,23 @@
               } @else if (notif.requestStatus === 'approved') {
                 <p class="request-resolved approved">✅ Approved</p>
               } @else if (notif.requestStatus === 'denied') {
-                <p class="request-resolved denied">✗ Denied</p>
+                <p class="request-resolved denied">Request denied</p>
               }
             </div>
           }
 
           @if (notif.type === 'join_approved') {
-            <p class="join-approved-msg">Your request to join was approved. You're in!</p>
+            <div class="notif-section">
+              <p class="join-approved-msg">Your request to join was approved — you're in!</p>
+            </div>
           }
 
           <div class="notif-footer">
-            <a [routerLink]="['/sessions', notif.session.id]" class="view-session-link" (click)="$event.stopPropagation()">
-              {{ notif.type === 'session_created' ? 'View & join →' : 'View session →' }}
+            <a [routerLink]="['/sessions', notif.session.id]" class="view-link" (click)="$event.stopPropagation()">
+              View session →
             </a>
           </div>
+
         </div>
       }
     </div>
