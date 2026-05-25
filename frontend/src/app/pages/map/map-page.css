@@ -54,12 +54,17 @@
 .session-row {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  padding: 0.65rem 1rem;
+  gap: 0.25rem;
+  padding: 0.8rem 1rem;
   text-decoration: none;
   color: inherit;
   border-left: 3px solid transparent;
+  border-bottom: 1px solid var(--color-border);
   transition: background 0.12s, border-color 0.12s;
+}
+
+.session-row:last-child {
+  border-bottom: none;
 }
 
 .session-row:hover {
@@ -78,20 +83,27 @@
 .row-top {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.4rem;
 }
 
+.row-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
 .row-course {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--color-primary-dark);
   background: var(--color-primary-light);
-  padding: 0.1rem 0.4rem;
+  padding: 0.12rem 0.45rem;
   border-radius: 20px;
 }
 
 .live-badge {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -101,21 +113,94 @@
   border-radius: 4px;
 }
 
-.row-desc {
-  font-size: 0.8rem;
+.full-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
+.row-course-name {
+  font-size: 0.83rem;
+  font-weight: 700;
   color: var(--color-text);
   margin: 0;
-  white-space: nowrap;
+}
+
+.row-desc {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.row-topics {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.row-topic {
+  font-size: 0.67rem;
+  font-weight: 500;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background: var(--color-raised);
+  color: var(--color-text-muted);
+}
+
+.row-topic--more {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-subtle);
 }
 
 .row-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0.2rem;
+  margin-top: 0.1rem;
+}
+
+.row-meta-item {
   font-size: 0.72rem;
+  color: var(--color-text-subtle);
+}
+
+.row-duration {
+  display: inline-block;
+  background: var(--color-raised);
+  color: var(--color-text-subtle);
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 0.04rem 0.28rem;
+  border-radius: 4px;
+  margin-left: 0.2rem;
+  vertical-align: middle;
+}
+
+.row-meta-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+}
+
+.row-owner {
+  font-weight: 600;
   color: var(--color-text-muted);
+}
+
+.row-pax {
+  color: var(--color-text-subtle);
 }
 
 /* ── Map ──────────────────────────────────────── */

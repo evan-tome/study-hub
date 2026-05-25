@@ -46,6 +46,12 @@ export class MapPage implements OnInit {
     return null;
   }
 
+  duration(start: string, end: string): string {
+    const mins = Math.round((new Date(end).getTime() - new Date(start).getTime()) / 60000);
+    const h = Math.floor(mins / 60), m = mins % 60;
+    return h ? (m ? `${h}h ${m}m` : `${h}h`) : `${mins}m`;
+  }
+
   formatTime(iso: string): string {
     return new Date(iso).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit', hour12: true });
   }

@@ -20,14 +20,37 @@
              (mouseleave)="hoveredSessionId.set(null)">
             <div class="row-top">
               <span class="row-course">{{ s.courseCode }}</span>
-              @if (sessionStatus(s.startTime, s.endTime) === 'ongoing') {
-                <span class="live-badge">Live</span>
-              }
+              <div class="row-badges">
+                @if (sessionStatus(s.startTime, s.endTime) === 'ongoing') {
+                  <span class="live-badge">Live</span>
+                }
+                @if (s.maxParticipants !== null && s.participants.length >= s.maxParticipants) {
+                  <span class="full-badge">Full</span>
+                }
+              </div>
             </div>
+            <p class="row-course-name">{{ s.courseName }}</p>
             <p class="row-desc">{{ s.description }}</p>
+            @if (s.topics.length > 0) {
+              <div class="row-topics">
+                @for (t of s.topics.slice(0, 2); track t) {
+                  <span class="row-topic">{{ t }}</span>
+                }
+                @if (s.topics.length > 2) {
+                  <span class="row-topic row-topic--more">+{{ s.topics.length - 2 }}</span>
+                }
+              </div>
+            }
             <div class="row-meta">
-              <span>📍 {{ s.location }}</span>
-              <span>{{ formatDate(s.startTime) }} · {{ formatTime(s.startTime) }}</span>
+              <span class="row-meta-item">📍 {{ s.location }}</span>
+              <span class="row-meta-item">
+                {{ formatDate(s.startTime) }} · {{ formatTime(s.startTime) }} – {{ formatTime(s.endTime) }}
+                <span class="row-duration">{{ duration(s.startTime, s.endTime) }}</span>
+              </span>
+              <div class="row-meta-bottom">
+                <span class="row-owner">{{ s.owner.name }}</span>
+                <span class="row-pax">👥 {{ s.participants.length }}{{ s.maxParticipants ? '/' + s.maxParticipants : '' }}</span>
+              </div>
             </div>
           </a>
         }
