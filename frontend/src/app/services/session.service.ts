@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AdminSession, AdminStats, AdminUser, ChatMessage, CreateSessionDto, RecommendedSession, SqlView, StudySession, UserProfile } from '../models/session.model';
+import { AdminSession, AdminStats, AdminUser, ChatMessage, CreateSessionDto, Notification, RecommendedSession, SqlView, StudySession, UserProfile } from '../models/session.model';
 import { Course } from '../data/courses';
 
 @Injectable({ providedIn: 'root' })
@@ -91,6 +91,42 @@ export class SessionService {
 
   runAdminView(view: string): Observable<any[]> {
     return this.http.post<any[]>(`${this.base}/admin/query`, { view });
+  }
+
+  endSessionEarly(sessionId: string): Observable<StudySession> {
+    return this.http.post<StudySession>(`${this.base}/sessions/${sessionId}/end`, {});
+  }
+
+  getJoinStatus(sessionId: string): Observable<{ status: 'none' | 'pending' }> {
+    return this.http.get<{ status: 'none' | 'pending' }>(`${this.base}/sessions/${sessionId}/join-status`);
+  }
+
+  requestJoin(sessionId: string): Observable<{ status: string }> {
+    return this.http.post<{ status: string }>(`${this.base}/sessions/${sessionId}/request-join`, {});
+  }
+
+  approveJoinRequest(notifId: string): Observable<Notification> {
+    return this.http.post<Notification>(`${this.base}/inbox/${notifId}/approve`, {});
+  }
+
+  denyJoinRequest(notifId: string): Observable<Notification> {
+    return this.http.post<Notification>(`${this.base}/inbox/${notifId}/deny`, {});
+  }
+
+  getInbox(): Observable<Notification[]> {
+    return this.http.get<Notification[]>(`${this.base}/inbox`);
+  }
+
+  getInboxUnreadCount(): Observable<{ count: number }> {
+    return this.http.get<{ count: number }>(`${this.base}/inbox/unread-count`);
+  }
+
+  markNotificationRead(id: string): Observable<Notification> {
+    return this.http.post<Notification>(`${this.base}/inbox/${id}/read`, {});
+  }
+
+  submitAttendance(id: string, attendeeCount: number): Observable<Notification> {
+    return this.http.post<Notification>(`${this.base}/inbox/${id}/attendance`, { attendeeCount });
   }
 
 }

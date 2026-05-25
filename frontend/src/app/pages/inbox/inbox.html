@@ -1,0 +1,123 @@
+<div class="page">
+  <div class="hero">
+    <h1>Inbox</h1>
+    <p>Post-session check-ins from sessions you hosted.</p>
+  </div>
+
+  @if (loading()) {
+    <div class="state-msg">Loading…</div>
+  } @else if (error()) {
+    <div class="state-msg error">{{ error() }}</div>
+  } @else if (notifications().length === 0) {
+    <div class="state-msg">
+      <p>No notifications yet.</p>
+      <p class="hint">You'll get a check-in here after each session you host ends.</p>
+    </div>
+  } @else {
+    <div class="notif-list">
+      @for (notif of notifications(); track notif.id) {
+        <div class="notif-card" [class.unread]="!notif.read" (click)="markRead(notif)">
+          <div class="notif-header">
+            <div class="notif-course">
+              <span class="notif-type-label"
+                [class.type-new]="notif.type === 'session_created'"
+                [class.type-ended]="notif.type === 'session_ended'"
+                [class.type-request]="notif.type === 'join_request'"
+                [class.type-approved]="notif.type === 'join_approved'">
+                {{ notif.type === 'session_created' ? 'New session'
+                 : notif.type === 'session_ended' ? 'Session ended'
+                 : notif.type === 'join_request' ? 'Join request'
+                 : 'Request approved' }}
+              </span>
+              <span class="course-code">{{ notif.session.courseCode }}</span>
+              <span class="course-name">{{ notif.session.courseName }}</span>
+              @if (notif.session.endedEarly) {
+                <span class="ended-early-badge">Ended early</span>
+              }
+            </div>
+            <div class="notif-header-right">
+              <span class="notif-time">{{ formatRelativeTime(notif.createdAt) }}</span>
+              @if (!notif.read) {
+                <span class="unread-dot" title="Unread"></span>
+              }
+            </div>
+          </div>
+
+          <p class="notif-desc">{{ notif.session.description }}</p>
+
+          <div class="notif-meta">
+            📅 {{ formatDate(notif.session.startTime) }},
+            {{ formatTime(notif.session.startTime) }} – {{ formatTime(notif.session.endTime) }}
+          </div>
+
+          @if (notif.type === 'session_ended') {
+            <div class="attendance-section">
+              @if (notif.attendeeCount !== null) {
+                <div class="attendance-recorded">
+                  ✅ <strong>{{ notif.attendeeCount }}</strong> {{ notif.attendeeCount === 1 ? 'person' : 'people' }} attended
+                </div>
+              } @else {
+                <div class="attendance-prompt">
+                  <label class="attendance-label">How many people showed up?</label>
+                  <div class="attendance-input-row">
+                    <input
+                      type="number"
+                      class="attendance-input"
+                      min="0"
+                      placeholder="0"
+                      [(ngModel)]="attendanceInputs[notif.id]"
+                      (click)="$event.stopPropagation()"
+                    />
+                    <button
+                      class="btn-submit"
+                      [disabled]="attendanceInputs[notif.id] == null || submitting() === notif.id"
+                      (click)="$event.stopPropagation(); submitAttendance(notif)"
+                    >
+                      {{ submitting() === notif.id ? 'Saving…' : 'Save' }}
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          @if (notif.type === 'join_request') {
+            <div class="join-request-section">
+              <p class="join-requester">
+                <strong>{{ notif.requesterName ?? 'Someone' }}</strong> wants to join this session.
+              </p>
+              @if (notif.requestStatus === 'pending') {
+                <div class="join-actions" (click)="$event.stopPropagation()">
+                  <button class="btn-approve"
+                    [disabled]="actioning() === notif.id"
+                    (click)="approveRequest(notif)">
+                    {{ actioning() === notif.id ? '…' : 'Approve' }}
+                  </button>
+                  <button class="btn-deny"
+                    [disabled]="actioning() === notif.id"
+                    (click)="denyRequest(notif)">
+                    Deny
+                  </button>
+                </div>
+              } @else if (notif.requestStatus === 'approved') {
+                <p class="request-resolved approved">✅ Approved</p>
+              } @else if (notif.requestStatus === 'denied') {
+                <p class="request-resolved denied">✗ Denied</p>
+              }
+            </div>
+          }
+
+          @if (notif.type === 'join_approved') {
+            <p class="join-approved-msg">Your request to join was approved. You're in!</p>
+          }
+
+          <div class="notif-footer">
+            <a [routerLink]="['/sessions', notif.session.id]" class="view-session-link" (click)="$event.stopPropagation()">
+              {{ notif.type === 'session_created' ? 'View & join →' : 'View session →' }}
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

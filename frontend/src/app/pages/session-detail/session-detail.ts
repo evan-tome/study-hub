@@ -46,11 +46,32 @@ export class SessionDetail implements OnInit, OnDestroy, AfterViewChecked {
     return !!uid && this.session()?.owner.id === uid;
   });
 
+  isActive = computed(() => {
+    const s = this.session();
+    if (!s) return false;
+    const now = Date.now();
+    return new Date(s.startTime).getTime() <= now && new Date(s.endTime).getTime() > now;
+  });
+
+  joinStatus = signal<'none' | 'pending' | 'loading'>('none');
+  joinError = signal('');
+
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.sessionService.getSession(id).subscribe({
-      next: (s) => { this.session.set(s); this.loading.set(false); this.startChat(id); },
+      next: (s) => {
+        this.session.set(s);
+        this.loading.set(false);
+        this.startChat(id);
+        if (this.auth.isLoggedIn() && !this.isParticipant() && !this.isOwner()) {
+          this.joinStatus.set('loading');
+          this.sessionService.getJoinStatus(id).subscribe({
+            next: ({ status }) => this.joinStatus.set(status),
+            error: () => this.joinStatus.set('none'),
+          });
+        }
+      },
       error: () => { this.error.set('Session not found.'); this.loading.set(false); },
     });
   }
@@ -113,11 +134,15 @@ export class SessionDetail implements OnInit, OnDestroy, AfterViewChecked {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.sendMessage(); }
   }
 
-  join() {
+  requestJoin() {
     this.actionLoading.set(true);
-    this.sessionService.joinSession(this.session()!.id).subscribe({
-      next: (s) => { this.session.set(s); this.actionLoading.set(false); },
-      error: () => this.actionLoading.set(false),
+    this.joinError.set('');
+    this.sessionService.requestJoin(this.session()!.id).subscribe({
+      next: () => { this.joinStatus.set('pending'); this.actionLoading.set(false); },
+      error: (e) => {
+        this.joinError.set(e.error?.error ?? 'Failed to send request.');
+        this.actionLoading.set(false);
+      },
     });
   }
 
@@ -126,6 +151,21 @@ export class SessionDetail implements OnInit, OnDestroy, AfterViewChecked {
     this.sessionService.leaveSession(this.session()!.id).subscribe({
       next: (s) => { this.session.set(s); this.actionLoading.set(false); },
       error: () => this.actionLoading.set(false),
+    });
+  }
+
+  endSessionEarly() {
+    const s = this.session()!;
+    this.dialog.set({
+      title: 'End session early',
+      message: `End "${s.courseCode} — ${s.description.slice(0, 60)}${s.description.length > 60 ? '…' : ''}" now? You'll get an inbox check-in to record attendance.`,
+      onConfirm: () => {
+        this.actionLoading.set(true);
+        this.sessionService.endSessionEarly(s.id).subscribe({
+          next: (updated) => { this.session.set(updated); this.actionLoading.set(false); },
+          error: () => this.actionLoading.set(false),
+        });
+      },
     });
   }
 

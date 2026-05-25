@@ -46,7 +46,14 @@
         </section>
 
         <section class="section">
-          <h2 class="section-title">Participants ({{ s.participants.length }})</h2>
+          <h2 class="section-title">
+            Participants
+            @if (s.maxParticipants) {
+              <span class="spots-label">{{ s.participants.length }} / {{ s.maxParticipants }}</span>
+            } @else {
+              <span class="spots-label">{{ s.participants.length }}</span>
+            }
+          </h2>
           <ul class="participant-list">
             @for (p of s.participants; track p.id) {
               <li class="participant">
@@ -71,15 +78,26 @@
             <button class="btn-leave" (click)="leave()" [disabled]="actionLoading()">
               {{ actionLoading() ? 'Leaving…' : 'Leave session' }}
             </button>
+          } @else if (s.maxParticipants && s.participants.length >= s.maxParticipants) {
+            <p class="join-prompt">This session is full.</p>
+          } @else if (joinStatus() === 'pending') {
+            <p class="pending-msg">Request sent — waiting for the host to approve.</p>
           } @else {
-            <button class="btn-join" (click)="join()" [disabled]="actionLoading()">
-              {{ actionLoading() ? 'Joining…' : 'Join this session' }}
+            <button class="btn-join" (click)="requestJoin()"
+              [disabled]="actionLoading() || joinStatus() === 'loading'">
+              {{ actionLoading() ? 'Sending…' : 'Request to join' }}
             </button>
+            @if (joinError()) {
+              <p class="join-error">{{ joinError() }}</p>
+            }
           }
 
           @if (isOwner()) {
             <hr class="divider" />
             <a [routerLink]="['/sessions', s.id, 'edit']" class="btn-edit">Edit session</a>
+            @if (isActive()) {
+              <button class="btn-end-early" (click)="endSessionEarly()" [disabled]="actionLoading()">End session early</button>
+            }
             <button class="btn-delete" (click)="deleteSession()">Delete session</button>
           }
         </div>

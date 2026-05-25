@@ -15,7 +15,7 @@ const BUILDINGS: Record<string, { coords: [number, number]; label: string }> = {
   OPG:   { coords: [-78.8983223079879, 43.945759800878946], label: 'OPG Engineering Building' },
   SIRC:  { coords: [-78.89913953129742, 43.947791624575046], label: 'Software & Informatics Research Centre' },
   LIB:   { coords: [-78.89728975390315, 43.94585734955008], label: 'Library' },
-  CRWC:   { coords: [-78.89603854208995, 43.94389457591058], label: 'Campus Recreation and Wellness Centre' },
+  CRWC:   { coords: [-78.89866149522307, 43.94407121518898], label: 'Campus Recreation and Wellness Centre' },
   DC:   { coords: [-78.89603854208995, 43.94389457591058], label: 'Durham College' },
 };
 

@@ -52,3 +52,6 @@ html, body {
 
 a { color: inherit; }
 button, input, select, textarea { font-family: inherit; }
+
+/* Angular router-outlet is a placeholder element — keep it out of document flow */
+router-outlet { display: none; }

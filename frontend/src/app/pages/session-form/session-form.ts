@@ -47,6 +47,7 @@ export class SessionForm implements OnInit {
     startTime: ['', Validators.required],
     endTime: ['', Validators.required],
     location: ['', Validators.required],
+    maxParticipants: [null as number | null, [Validators.min(2)]],
   });
 
   ngOnInit() {
@@ -85,6 +86,7 @@ export class SessionForm implements OnInit {
           startTime: this.toLocal(new Date(s.startTime)),
           endTime: this.toLocal(new Date(s.endTime)),
           location: s.location,
+          maxParticipants: s.maxParticipants ?? null,
         });
       },
     });
@@ -158,6 +160,7 @@ export class SessionForm implements OnInit {
       endTime: end.toISOString(),
       locationType: this.locationType(),
       location: v.location!,
+      maxParticipants: v.maxParticipants ? Number(v.maxParticipants) : null,
     };
 
     const req$ = this.isEdit

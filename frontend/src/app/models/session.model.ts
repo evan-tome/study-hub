@@ -17,6 +17,7 @@ export interface StudySession {
   endTime: string;
   locationType: 'room' | 'online';
   location: string;
+  maxParticipants: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -29,6 +30,7 @@ export interface CreateSessionDto {
   endTime: string;
   locationType: 'room' | 'online';
   location: string;
+  maxParticipants?: number | null;
 }
 
 export interface ChatMessage {
@@ -80,6 +82,27 @@ export interface SqlView {
   key: string;
   label: string;
   description?: string;
+}
+
+export interface Notification {
+  id: string;
+  sessionId: string;
+  type: 'session_ended' | 'session_created' | 'join_request' | 'join_approved';
+  attendeeCount: number | null;
+  requesterId?: string;
+  requesterName?: string;
+  requestStatus?: string;
+  read: boolean;
+  createdAt: string;
+  session: {
+    id: string;
+    courseCode: string;
+    courseName: string;
+    description: string;
+    startTime: string;
+    endTime: string;
+    endedEarly: boolean;
+  };
 }
 
 export interface RecommendedSession extends StudySession {

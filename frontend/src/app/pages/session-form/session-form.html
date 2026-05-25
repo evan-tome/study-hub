@@ -97,6 +97,17 @@
       </div>
     </div>
 
+    <!-- Max participants -->
+    <div class="field field--inline">
+      <label for="maxParticipants">Max participants</label>
+      <input id="maxParticipants" type="number" formControlName="maxParticipants"
+        min="2" placeholder="No limit" style="width: 120px;" />
+      <span class="field-hint">Leave blank for unlimited.</span>
+      @if (form.get('maxParticipants')?.invalid && form.get('maxParticipants')?.touched) {
+        <span class="error-msg">Minimum 2.</span>
+      }
+    </div>
+
     <!-- Location -->
     <div class="field">
       <label>Location <span class="required">*</span></label>

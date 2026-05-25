@@ -9,6 +9,7 @@ import { Profile } from './pages/profile/profile';
 import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
 import { Admin } from './pages/admin/admin';
+import { Inbox } from './pages/inbox/inbox';
 
 export const routes: Routes = [
   { path: '', component: Landing },
@@ -20,5 +21,6 @@ export const routes: Routes = [
   { path: 'sessions/:id/edit', component: SessionForm, canActivate: [authGuard] },
   { path: 'sessions/:id', component: SessionDetail },
   { path: 'admin', component: Admin, canActivate: [adminGuard] },
+  { path: 'inbox', component: Inbox, canActivate: [authGuard] },
   { path: '**', redirectTo: '' },
 ];
