@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AdminSession, AdminStats, AdminUser, ChatMessage, CreateSessionDto, Notification, RecommendedSession, SqlView, StudySession, UserProfile } from '../models/session.model';
@@ -8,6 +8,14 @@ import { Course } from '../data/courses';
 export class SessionService {
   private http = inject(HttpClient);
   private base = '/api';
+
+  readonly unreadCount = signal(0);
+
+  refreshUnreadCount(): void {
+    this.getInboxUnreadCount().subscribe({
+      next: ({ count }) => this.unreadCount.set(count),
+    });
+  }
 
   getSessions(course?: string): Observable<StudySession[]> {
     let params = new HttpParams();

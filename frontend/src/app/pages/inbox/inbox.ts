@@ -30,8 +30,12 @@ export class Inbox implements OnInit {
 
   markRead(notif: Notification) {
     if (notif.read) return;
+    this.updateNotif({ ...notif, read: true });
     this.sessionService.markNotificationRead(notif.id).subscribe({
-      next: (updated) => this.updateNotif(updated),
+      next: (updated) => {
+        this.updateNotif(updated);
+        this.sessionService.refreshUnreadCount();
+      },
     });
   }
 

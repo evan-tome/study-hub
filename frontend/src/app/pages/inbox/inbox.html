@@ -16,7 +16,7 @@
   } @else {
     <div class="notif-list">
       @for (notif of notifications(); track notif.id) {
-        <div class="notif-card" [class.unread]="!notif.read" (click)="markRead(notif)">
+        <div class="notif-card" [class.unread]="!notif.read" (mouseenter)="markRead(notif)">
           <div class="notif-header">
             <div class="notif-course">
               <span class="notif-type-label"

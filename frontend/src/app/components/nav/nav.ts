@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { SessionService } from '../../services/session.service';
@@ -16,24 +16,18 @@ export class Nav implements OnInit, OnDestroy {
   layout = inject(LayoutService);
   private sessionService = inject(SessionService);
 
-  unreadCount = signal(0);
+  readonly unreadCount = this.sessionService.unreadCount;
+
   private pollInterval?: ReturnType<typeof setInterval>;
 
   ngOnInit() {
     if (this.auth.isLoggedIn()) {
-      this.fetchUnread();
-      this.pollInterval = setInterval(() => this.fetchUnread(), 60000);
+      this.sessionService.refreshUnreadCount();
+      this.pollInterval = setInterval(() => this.sessionService.refreshUnreadCount(), 60000);
     }
   }
 
   ngOnDestroy() {
     clearInterval(this.pollInterval);
-  }
-
-  private fetchUnread() {
-    if (!this.auth.isLoggedIn()) return;
-    this.sessionService.getInboxUnreadCount().subscribe({
-      next: ({ count }) => this.unreadCount.set(count),
-    });
   }
 }
