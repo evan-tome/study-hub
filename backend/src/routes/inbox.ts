@@ -14,10 +14,12 @@ const sessionSelect = {
   endedEarly: true,
 } as const;
 
+// enrich session data with course name
 function enrich(n: any) {
   return { ...n, session: { ...n.session, courseName: getCachedCourseName(n.session.courseCode) } };
 }
 
+// ensure that for any sessions owned by the user that have ended, there is a corresponding "session_ended" notification in the inbox
 async function ensureNotificationsForOwner(userId: string) {
   const now = new Date();
   const endedSessions = await prisma.studySession.findMany({
@@ -36,6 +38,7 @@ async function ensureNotificationsForOwner(userId: string) {
   }
 }
 
+// GET /inbox - return the list of notifications for the authenticated user, sorted by most recent first
 router.get('/', requireAuth, async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.userId;
@@ -65,6 +68,7 @@ router.get('/', requireAuth, async (req: AuthRequest, res) => {
   }
 });
 
+// GET /inbox/unread-count - return the count of unread notifications for the authenticated user
 router.get('/unread-count', requireAuth, async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.userId;
@@ -76,6 +80,7 @@ router.get('/unread-count', requireAuth, async (req: AuthRequest, res) => {
   }
 });
 
+// POST /inbox/:id/read - mark a notification as read
 router.post('/:id/read', requireAuth, async (req: AuthRequest, res) => {
   try {
     const id = String(req.params.id);
@@ -90,6 +95,7 @@ router.post('/:id/read', requireAuth, async (req: AuthRequest, res) => {
   }
 });
 
+// submit attendance for a session - update the attendee count and mark the notification as read
 router.post('/:id/attendance', requireAuth, async (req: AuthRequest, res) => {
   try {
     const id = String(req.params.id);
@@ -112,14 +118,17 @@ router.post('/:id/attendance', requireAuth, async (req: AuthRequest, res) => {
   }
 });
 
+// approve a join request - add the requester to the session participants and mark the notification as approved
 router.post('/:id/approve', requireAuth, async (req: AuthRequest, res) => {
   try {
     const id = String(req.params.id);
     const userId = req.user!.userId;
     const notif = await prisma.notification.findUnique({ where: { id } });
+    // validate notification exists, belongs to user, and is a pending join request
     if (!notif || notif.userId !== userId || notif.type !== 'join_request') {
       res.status(404).json({ error: 'Request not found' }); return;
     }
+    // ensure request is still pending
     if (notif.requestStatus !== 'pending') {
       res.status(400).json({ error: 'Request already resolved' }); return;
     }
@@ -151,6 +160,7 @@ router.post('/:id/approve', requireAuth, async (req: AuthRequest, res) => {
   }
 });
 
+// deny a join request - mark the notification as denied but do not update session participants
 router.post('/:id/deny', requireAuth, async (req: AuthRequest, res) => {
   try {
     const id = String(req.params.id);
