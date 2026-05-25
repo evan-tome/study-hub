@@ -194,13 +194,36 @@ export class SessionDetail implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   duration(start: string, end: string) {
-    const mins = (new Date(end).getTime() - new Date(start).getTime()) / 60000;
+    const mins = Math.round((new Date(end).getTime() - new Date(start).getTime()) / 60000);
     const h = Math.floor(mins / 60), m = mins % 60;
     return h ? (m ? `${h}h ${m}m` : `${h}h`) : `${mins}m`;
   }
 
   isMine(msg: ChatMessage): boolean {
     return msg.author.id === this.auth.currentUser()?.id;
+  }
+
+  showDateSep(index: number): boolean {
+    const msgs = this.messages();
+    if (index === 0) return true;
+    return new Date(msgs[index].createdAt).toDateString() !== new Date(msgs[index - 1].createdAt).toDateString();
+  }
+
+  showAuthor(index: number): boolean {
+    const msgs = this.messages();
+    if (this.isMine(msgs[index])) return false;
+    if (index === 0) return true;
+    return msgs[index].author.id !== msgs[index - 1].author.id || this.showDateSep(index);
+  }
+
+  msgDateLabel(iso: string): string {
+    const d = new Date(iso);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    if (d.toDateString() === today.toDateString()) return 'Today';
+    if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return d.toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric' });
   }
 
   participantTip(p: { name: string; program: string; year: number }): string | null {

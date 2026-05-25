@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { SessionService } from '../../services/session.service';
+import { LayoutService } from '../../services/layout.service';
 
 @Component({
   selector: 'app-nav',
@@ -12,6 +13,7 @@ import { SessionService } from '../../services/session.service';
 })
 export class Nav implements OnInit, OnDestroy {
   auth = inject(AuthService);
+  layout = inject(LayoutService);
   private sessionService = inject(SessionService);
 
   unreadCount = signal(0);

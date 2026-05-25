@@ -149,7 +149,9 @@
                 <td class="num-col">{{ s._count.messages }}</td>
                 <td class="date-cell">{{ formatDate(s.createdAt) }}</td>
                 <td class="action-cell">
-                  <button class="btn-danger" (click)="deleteSession(s.id, s.courseCode)">Delete</button>
+                  <button class="btn-danger" [class.btn-disabled]="isEnded(s.endTime)"
+                    [title]="isEnded(s.endTime) ? 'Ended sessions cannot be deleted' : ''"
+                    (click)="isEnded(s.endTime) || deleteSession(s.id, s.courseCode)">Delete</button>
                 </td>
               </tr>
             }

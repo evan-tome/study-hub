@@ -1,4 +1,11 @@
-<app-nav />
-<main>
-  <router-outlet />
-</main>
+<div class="app-layout">
+  @if (!isLanding()) {
+    <app-nav />
+    @if (auth.isLoggedIn() && layout.sessionPanelOpen()) {
+      <app-session-sidebar />
+    }
+  }
+  <main>
+    <router-outlet />
+  </main>
+</div>

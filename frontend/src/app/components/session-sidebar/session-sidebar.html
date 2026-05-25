@@ -1,0 +1,102 @@
+<aside class="sidebar">
+
+  <div class="sidebar-header">
+    <span class="sidebar-title">Sessions</span>
+    @if (isLoggedIn()) {
+      <a routerLink="/sessions/new" class="sidebar-new-btn" title="New session">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" width="14" height="14">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      </a>
+    }
+  </div>
+
+  <div class="sidebar-scroll">
+
+    @if (!isLoggedIn()) {
+      <p class="empty">Sign in to see your sessions.</p>
+    } @else {
+
+      <!-- Created -->
+      <div class="section">
+        <button class="section-header" (click)="toggleSection('created')">
+          <svg class="chevron" [class.collapsed]="isCollapsed('created')" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" width="10" height="10">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+          </svg>
+          Created
+          @if (createdSessions().length > 0) {
+            <span class="section-count">{{ createdSessions().length }}</span>
+          }
+        </button>
+        @if (!isCollapsed('created')) {
+          @if (createdSessions().length > 0) {
+            @for (s of createdSessions(); track s.id) {
+              <a [routerLink]="['/sessions', s.id]" class="session-item" [class.active]="isActive(s.id)">
+                <span class="status-dot" [class]="status(s)"></span>
+                <span class="item-course">{{ s.courseCode }}</span>
+                <span class="item-time">{{ formatTime(s.startTime) }}</span>
+              </a>
+            }
+          } @else {
+            <p class="empty-section">None yet</p>
+          }
+        }
+      </div>
+
+      <!-- Joined -->
+      <div class="section">
+        <button class="section-header" (click)="toggleSection('joined')">
+          <svg class="chevron" [class.collapsed]="isCollapsed('joined')" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" width="10" height="10">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+          </svg>
+          Joined
+          @if (joinedSessions().length > 0) {
+            <span class="section-count">{{ joinedSessions().length }}</span>
+          }
+        </button>
+        @if (!isCollapsed('joined')) {
+          @if (joinedSessions().length > 0) {
+            @for (s of joinedSessions(); track s.id) {
+              <a [routerLink]="['/sessions', s.id]" class="session-item" [class.active]="isActive(s.id)">
+                <span class="status-dot" [class]="status(s)"></span>
+                <span class="item-course">{{ s.courseCode }}</span>
+                <span class="item-time">{{ formatTime(s.startTime) }}</span>
+              </a>
+            }
+          } @else {
+            <p class="empty-section">None yet</p>
+          }
+        }
+      </div>
+
+      <!-- Ended -->
+      <div class="section">
+        <button class="section-header" (click)="toggleSection('ended')">
+          <svg class="chevron" [class.collapsed]="isCollapsed('ended')" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" width="10" height="10">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+          </svg>
+          Ended
+          @if (endedSessions().length > 0) {
+            <span class="section-count">{{ endedSessions().length }}</span>
+          }
+        </button>
+        @if (!isCollapsed('ended')) {
+          @if (endedSessions().length > 0) {
+            @for (s of endedSessions(); track s.id) {
+              <a [routerLink]="['/sessions', s.id]" class="session-item ended" [class.active]="isActive(s.id)">
+                <span class="status-dot ended"></span>
+                <span class="item-course">{{ s.courseCode }}</span>
+                <span class="item-time">{{ formatTime(s.startTime) }}</span>
+              </a>
+            }
+          } @else {
+            <p class="empty-section">None yet</p>
+          }
+        }
+      </div>
+
+    }
+
+  </div>
+
+</aside>

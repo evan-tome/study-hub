@@ -15,6 +15,9 @@ type Tab = 'users' | 'sessions' | 'export';
 })
 export class Admin implements OnInit {
   private svc = inject(SessionService);
+  isEnded(endTime: string): boolean {
+    return new Date(endTime) <= new Date();
+  }
 
   tab = signal<Tab>('users');
   stats = signal<AdminStats | null>(null);
@@ -179,7 +182,7 @@ export class Admin implements OnInit {
   }
 
   duration(start: string, end: string) {
-    const mins = (new Date(end).getTime() - new Date(start).getTime()) / 60000;
+    const mins = Math.round((new Date(end).getTime() - new Date(start).getTime()) / 60000);
     const h = Math.floor(mins / 60), m = mins % 60;
     return h ? (m ? `${h}h ${m}m` : `${h}h`) : `${mins}m`;
   }

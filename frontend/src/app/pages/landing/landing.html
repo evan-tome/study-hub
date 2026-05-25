@@ -1,3 +1,16 @@
+<nav class="landing-nav">
+  <div class="landing-nav-links">
+    <a routerLink="/" class="landing-nav-link">About</a>
+    <a routerLink="/discover" class="landing-nav-link">Discover</a>
+    <a routerLink="/sessions/new" class="landing-nav-link">Create</a>
+  </div>
+  @if (currentUser()) {
+    <a routerLink="/discover" class="landing-login-btn">Open App</a>
+  } @else {
+    <a routerLink="/login" class="landing-login-btn">Log In</a>
+  }
+</nav>
+
 <div class="landing">
 
   <div class="hero">
@@ -9,13 +22,13 @@
 
     @if (currentUser()) {
       <div class="hero-actions">
-        <a routerLink="/sessions" class="btn-primary btn-lg">Browse Sessions →</a>
+        <a routerLink="/discover" class="btn-primary btn-lg">Browse Sessions →</a>
         <span class="hero-welcome">Welcome back, {{ currentUser()!.name }}</span>
       </div>
     } @else {
       <div class="hero-actions">
         <a routerLink="/register" class="btn-primary btn-lg">Create a free account</a>
-        <a routerLink="/sessions" class="btn-outline btn-lg">Browse sessions</a>
+        <a routerLink="/discover" class="btn-outline btn-lg">Browse sessions</a>
       </div>
       <p class="hero-note">Requires an <strong>@ontariotechu.net</strong> email to register.</p>
     }

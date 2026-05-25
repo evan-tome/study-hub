@@ -118,6 +118,10 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res) => {
       res.status(403).json({ error: 'Only the session owner can delete it' });
       return;
     }
+    if (session.endTime <= new Date()) {
+      res.status(403).json({ error: 'Ended sessions cannot be deleted' });
+      return;
+    }
     await prisma.studySession.delete({ where: { id } });
     res.status(204).send();
   } catch {

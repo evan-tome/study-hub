@@ -1,0 +1,45 @@
+<div class="page">
+
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2 class="sidebar-title">Campus Map</h2>
+      <span class="sidebar-count">{{ inPersonSessions().length }} in-person</span>
+    </div>
+
+    <div class="sidebar-list">
+      @if (loading()) {
+        <p class="sidebar-empty">Loading…</p>
+      } @else if (inPersonSessions().length === 0) {
+        <p class="sidebar-empty">No in-person sessions right now.</p>
+      } @else {
+        @for (s of inPersonSessions(); track s.id) {
+          <a [routerLink]="['/sessions', s.id]"
+             class="session-row"
+             [class.session-row--live]="sessionStatus(s.startTime, s.endTime) === 'ongoing'"
+             (mouseenter)="hoveredSessionId.set(s.id)"
+             (mouseleave)="hoveredSessionId.set(null)">
+            <div class="row-top">
+              <span class="row-course">{{ s.courseCode }}</span>
+              @if (sessionStatus(s.startTime, s.endTime) === 'ongoing') {
+                <span class="live-badge">Live</span>
+              }
+            </div>
+            <p class="row-desc">{{ s.description }}</p>
+            <div class="row-meta">
+              <span>📍 {{ s.location }}</span>
+              <span>{{ formatDate(s.startTime) }} · {{ formatTime(s.startTime) }}</span>
+            </div>
+          </a>
+        }
+      }
+    </div>
+  </div>
+
+  <div class="map-wrap">
+    <app-campus-map
+      [sessions]="sessions()"
+      [userCourses]="userCourses()"
+      [activeSessionId]="hoveredSessionId()" />
+  </div>
+
+</div>

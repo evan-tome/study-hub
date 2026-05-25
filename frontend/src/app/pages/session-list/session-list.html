@@ -9,6 +9,9 @@
       [value]="searchQuery()" (input)="onSearch($any($event.target).value)" />
     <select class="course-select" [value]="courseFilter()" (change)="onCourseFilter($any($event.target).value)">
       <option value="">All Courses</option>
+      @if (userCourses().length > 0) {
+        <option value="__my_courses__">My Courses</option>
+      }
       @for (course of usedCourses(); track course.code) {
         <option [value]="course.code">{{ course.code }} - {{ course.name }}</option>
       }

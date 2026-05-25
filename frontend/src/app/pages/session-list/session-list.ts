@@ -35,7 +35,8 @@ export class SessionList implements OnInit {
   usedCourses = computed(() => {
     const seen = new Map<string, string>();
     for (const s of this.sessions()) {
-      if (!seen.has(s.courseCode)) seen.set(s.courseCode, s.courseName);
+      if (this.sessionStatus(s.startTime, s.endTime) !== 'ended' && !seen.has(s.courseCode))
+        seen.set(s.courseCode, s.courseName);
     }
     return Array.from(seen.entries())
       .map(([code, name]) => ({ code, name }))
@@ -45,8 +46,12 @@ export class SessionList implements OnInit {
   filteredSessions = computed(() => {
     const q = this.searchQuery().toLowerCase();
     const c = this.courseFilter();
+    const enrolled = new Set(this.userCourses());
     return this.sessions().filter((s) => {
-      const matchesCourse = !c || s.courseCode === c;
+      const matchesCourse =
+        !c ? true :
+        c === '__my_courses__' ? enrolled.has(s.courseCode) :
+        s.courseCode === c;
       const matchesSearch =
         !q ||
         s.courseCode.toLowerCase().includes(q) ||
@@ -150,7 +155,7 @@ export class SessionList implements OnInit {
   }
 
   duration(start: string, end: string): string {
-    const mins = (new Date(end).getTime() - new Date(start).getTime()) / 60000;
+    const mins = Math.round((new Date(end).getTime() - new Date(start).getTime()) / 60000);
     const h = Math.floor(mins / 60), m = mins % 60;
     return h ? (m ? `${h}h ${m}m` : `${h}h`) : `${mins}m`;
   }

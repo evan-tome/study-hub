@@ -80,6 +80,12 @@ router.get('/sessions', requireAdmin, async (_req, res) => {
 router.delete('/sessions/:id', requireAdmin, async (req, res) => {
   try {
     const id = String(req.params.id);
+    const session = await prisma.studySession.findUnique({ where: { id }, select: { endTime: true } });
+    if (!session) { res.status(404).json({ error: 'Session not found' }); return; }
+    if (session.endTime <= new Date()) {
+      res.status(403).json({ error: 'Ended sessions cannot be deleted' });
+      return;
+    }
     await prisma.studySession.delete({ where: { id } });
     res.status(204).send();
   } catch {

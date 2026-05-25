@@ -1,5 +1,5 @@
 .page {
-  height: calc(100vh - 56px);
+  height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -288,7 +288,7 @@
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0;
 }
 
 .chat-empty {
@@ -299,11 +299,38 @@
   margin: auto;
 }
 
+.chat-date-sep {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-subtle);
+  margin: 1rem 0 0.5rem;
+  position: relative;
+}
+
+.chat-date-sep::before,
+.chat-date-sep::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: calc(50% - 2.5rem);
+  height: 1px;
+  background: var(--color-border);
+}
+
+.chat-date-sep::before { left: 0; }
+.chat-date-sep::after  { right: 0; }
+
 .msg {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   max-width: 88%;
+  margin-top: 0.6rem;
+}
+
+.msg--chained {
+  margin-top: 0.15rem;
 }
 
 .msg.mine {
@@ -311,17 +338,13 @@
   align-self: flex-end;
 }
 
-.msg-meta {
-  display: flex;
-  gap: 0.35rem;
-  align-items: center;
-  font-size: 0.7rem;
-  color: var(--color-text-subtle);
+.msg-author {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
   padding: 0 0.25rem;
   margin-bottom: 0.2rem;
 }
-
-.msg-author { font-weight: 600; color: var(--color-text-muted); }
 
 .msg-bubble {
   background: var(--color-raised);
@@ -333,6 +356,19 @@
   line-height: 1.45;
   word-break: break-word;
   white-space: pre-wrap;
+}
+
+.msg-time {
+  font-size: 0.65rem;
+  color: var(--color-text-subtle);
+  margin-left: 0.5rem;
+  vertical-align: bottom;
+  white-space: nowrap;
+  opacity: 0.75;
+}
+
+.msg.mine .msg-time {
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .msg.mine .msg-bubble {

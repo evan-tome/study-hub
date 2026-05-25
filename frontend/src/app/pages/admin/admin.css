@@ -256,6 +256,11 @@ td .muted {
   border-color: #ef4444;
 }
 
+.btn-disabled {
+  opacity: 0.35;
+  cursor: not-allowed !important;
+}
+
 
 /* ── View nav (export tab) ── */
 .view-nav {

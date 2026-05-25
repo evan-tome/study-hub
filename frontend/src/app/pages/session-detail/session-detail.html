@@ -110,15 +110,18 @@
           @if (messages().length === 0) {
             <div class="chat-empty">No messages yet. Say hello!</div>
           }
-          @for (msg of messages(); track msg.id) {
-            <div class="msg" [class.mine]="isMine(msg)">
-              <div class="msg-meta">
-                @if (!isMine(msg)) {
-                  <span class="msg-author">{{ msg.author.name }}</span>
-                }
+          @for (msg of messages(); track msg.id; let i = $index) {
+            @if (showDateSep(i)) {
+              <div class="chat-date-sep">{{ msgDateLabel(msg.createdAt) }}</div>
+            }
+            <div class="msg" [class.mine]="isMine(msg)" [class.msg--chained]="!showAuthor(i) && !showDateSep(i)">
+              @if (showAuthor(i)) {
+                <span class="msg-author">{{ msg.author.name }}</span>
+              }
+              <div class="msg-bubble">
+                {{ msg.content }}
                 <span class="msg-time">{{ formatMsgTime(msg.createdAt) }}</span>
               </div>
-              <div class="msg-bubble">{{ msg.content }}</div>
             </div>
           }
         </div>
